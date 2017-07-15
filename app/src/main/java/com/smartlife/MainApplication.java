@@ -26,7 +26,6 @@ import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.smartlife.dlan.manager.DlanManager;
 import com.smartlife.huanxin.DemoHelper;
-import com.smartlife.netty.manager.NettyManager;
 import com.smartlife.qintin.handler.UnceHandler;
 import com.smartlife.qintin.model.CredentialModel;
 import com.smartlife.qintin.model.DomainCenterModel;
@@ -154,7 +153,7 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
             Nammu.init(this);
         }
         ThemeUtils.setSwitchColor(this);
-        initCatchException();
+        // initCatchException();
         if (!PreferencesUtility.getInstance(this).getFavriateMusicPlaylist()) {
             PlaylistInfo.getInstance(this).addPlaylist(favPlaylist, getResources().getString(com.smartlife.R.string.my_fav_playlist),
                     0, "res:/" + com.smartlife.R.mipmap.lay_protype_default, "local");
