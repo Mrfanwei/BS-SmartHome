@@ -1,0 +1,10 @@
+com/hyphenate/EMConnectionListener.class
+com/hyphenate/EMCallBack.class
+com/tencent/bugly/crashreport/CrashReport.class
+com/tencent/bugly/crashreport/crash/h5/H5JavaScriptInterface.class
+com/tencent/bugly/Bugly.class
+com/tencent/bugly/BuglyStrategy.class
+com/tencent/bugly/CrashModule.class
+com/tencent/bugly/crashreport/BuglyLog.class
+com/tencent/bugly/CrashModule.class
+com/tencent/bugly.*
