@@ -26,7 +26,6 @@ import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechUtility;
 import com.smartlife.dlan.manager.DlanManager;
 import com.smartlife.huanxin.DemoHelper;
-import com.smartlife.netty.manager.NettyManager;
 import com.smartlife.qintin.handler.UnceHandler;
 import com.smartlife.qintin.model.CredentialModel;
 import com.smartlife.qintin.model.DomainCenterModel;

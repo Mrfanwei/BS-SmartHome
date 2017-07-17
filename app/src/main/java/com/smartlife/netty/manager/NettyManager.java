@@ -140,7 +140,7 @@ public class NettyManager {
         @Override
         public void onCollectionLike(String phoneid) throws RemoteException {
             Log.d(TAG,"onCollectionLike phoneid="+phoneid);
-            NettyHandlerUtils.sendMessage(mNettyHandler,Constants.a,0,null);
+            NettyHandlerUtils.sendMessage(mNettyHandler, Constants.a,0,null);
         }
     }
 

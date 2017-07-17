@@ -6,7 +6,7 @@ import com.smartlife.netty.view.INettyView;
  * Created by Administrator on 2017/6/17.
  */
 
-public class NettyManagerListenerImpl implements NettyManagerListener{
+public class NettyManagerListenerImpl implements NettyManagerListener {
     private INettyView mINettyView;
 
     @Override
