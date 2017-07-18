@@ -29,7 +29,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
         _gateClientConnection = ctx;
         String passwd = "123";
 //        _userId = Long.toString(increased.getAndIncrement());
-        _userId = "ffff";
+        _userId = "fffw";
         sendCRegister(ctx, _userId, passwd);
         sendCLogin(ctx, _userId, passwd);
     }
@@ -101,8 +101,8 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
 
         Chat.CPrivateChat.Builder cp = Chat.CPrivateChat.newBuilder();
         cp.setContent(command);
-        cp.setSelf("ffff");
-        cp.setDest("ffff");
+        cp.setSelf("fffw");
+        cp.setDest("fffw");
 
         ByteBuf byteBuf = Utils.pack2Client(cp.build());
         _gateClientConnection.writeAndFlush(byteBuf);
