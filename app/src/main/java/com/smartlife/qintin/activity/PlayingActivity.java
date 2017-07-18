@@ -128,7 +128,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
     private long lastAlbum;
     private PlayMusic mPlayThread;
     private boolean print = true;
-    private String TAG = PlayingActivity.class.getSimpleName();
+    private String TAG = "SmartLife/PlayAct";
     CollectionTask mInsertMusicTask=null;
     CollectionTask mGetMusicTask=null;
     CollectionTask mDeleteMusicTask = null;
@@ -492,6 +492,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
                     try {
                         //MusicInfo info = MusicPlayer.getPlayinfos().get(MusicPlayer.getCurrentAudioId());
                         mPlaylistsManager.insertMusic(PlayingActivity.this, IConstants.FAV_PLAYLIST, info);
+                        Log.d(TAG,"insertMusicData");
                         insertMusicData(info.albumId,info.filepath);
                         mINettyPresenter.collectionLike();
                         //getMusicData();
@@ -1155,9 +1156,9 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
                 case 1:
                     OkHttpUtils
                             .post()
-                            .url("http://192.168.0.6:8080/insertMusicData")
-                            .addParams("phone","1866666")
-                            .addParams("parentid","17999999")
+                            .url("http://112.74.175.96:8080/insertMusicData")
+                            .addParams("phone","zzz66677")
+                            .addParams("parentid","zz999977")
                             .addParams("filepath",filepath)
                             .addParams("albumid",Integer.toString(albumid))
                             .build()
@@ -1176,7 +1177,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
                 case 2:
                     OkHttpUtils
                             .post()
-                            .url("http://192.168.0.6:8080/getMusicInfo")
+                            .url("http://112.74.175.96:8080/getMusicInfo")
                             .addParams("phonename", "1866666")
                             .build()
                             .execute(new StringCallback() {
