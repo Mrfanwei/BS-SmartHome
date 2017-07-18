@@ -1,7 +1,6 @@
 package com.smartlife.netty.helper;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 
 public class Alarm extends Task {
 
@@ -52,7 +51,7 @@ public class Alarm extends Task {
 	public Alarm() {
 	}
 
-	public static final Parcelable.Creator<Alarm> CREATOR = new Parcelable.Creator<Alarm>() {
+	public static final Creator<Alarm> CREATOR = new Creator<Alarm>() {
 		@Override
 		public Alarm[] newArray(int size) {
 			return new Alarm[size];

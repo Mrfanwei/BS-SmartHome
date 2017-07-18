@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.bilibili.magicasakura.utils.ThemeUtils;
 import com.smartlife.dlan.fragment.DlanFragment;
+import com.smartlife.netty.fragment.NettyFragment;
 import com.smartlife.qintin.activity.BaseActivity;
 import com.smartlife.qintin.activity.NetSearchWordsActivity;
 import com.smartlife.qintin.adapter.MenuItemAdapter;
@@ -206,6 +207,11 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
                         drawerLayout.closeDrawers();
                         break;
                     case 6:
+                        NettyFragment nettyfragment = new NettyFragment();
+                        nettyfragment.show(getSupportFragmentManager(), "netty");
+                        drawerLayout.closeDrawers();
+                        break;
+                    case 7:
                         if (MusicPlayer.isPlaying()) {
                             MusicPlayer.playOrPause();
                         }

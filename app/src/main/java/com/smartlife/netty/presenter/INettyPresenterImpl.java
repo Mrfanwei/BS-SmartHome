@@ -2,7 +2,6 @@ package com.smartlife.netty.presenter;
 
 import android.content.Context;
 
-import com.smartlife.MainApplication;
 import com.smartlife.netty.listener.NettyManagerListener;
 import com.smartlife.netty.listener.NettyManagerListenerImpl;
 import com.smartlife.netty.manager.NettyManager;

@@ -47,7 +47,6 @@ import com.hyphenate.exceptions.HyphenateException;
 import com.hyphenate.media.EMLocalSurfaceView;
 import com.hyphenate.media.EMOppositeSurfaceView;
 import com.hyphenate.util.EMLog;
-import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.huanxin.DemoHelper;
 import com.smartlife.netty.manager.NettyManager;
