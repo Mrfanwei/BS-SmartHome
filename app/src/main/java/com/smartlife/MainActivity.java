@@ -25,34 +25,42 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bilibili.magicasakura.utils.ThemeUtils;
+import com.google.gson.Gson;
 import com.smartlife.dlan.fragment.DlanFragment;
+import com.smartlife.http.OkRequestEvents;
+import com.smartlife.huanxin.fragment.RobotStatusFragment;
 import com.smartlife.netty.fragment.NettyFragment;
 import com.smartlife.qintin.activity.BaseActivity;
 import com.smartlife.qintin.activity.NetSearchWordsActivity;
 import com.smartlife.qintin.adapter.MenuItemAdapter;
 import com.smartlife.qintin.dialog.CardPickerDialog;
-import com.smartlife.qintin.fragment.BitSetFragment;
-import com.smartlife.huanxin.fragment.RobotStatusFragment;
-import com.smartlife.qintin.fragment.TimingFragment;
 import com.smartlife.qintin.fragmentnet.CategoryFragment;
 import com.smartlife.qintin.fragmentnet.MusicFragment;
 import com.smartlife.qintin.fragmentnet.RadioFragment;
 import com.smartlife.qintin.fragmentnet.SelectFragment;
 import com.smartlife.qintin.handler.HandlerUtil;
+import com.smartlife.qintin.model.CredentialModel;
+import com.smartlife.qintin.model.DomainCenterModel;
 import com.smartlife.qintin.service.MusicPlayer;
 import com.smartlife.qintin.uitl.ThemeHelper;
 import com.smartlife.qintin.widget.CustomViewPager;
 import com.smartlife.qintin.widget.SplashScreen;
+import com.smartlife.utils.Constants;
+import com.smartlife.utils.StringUtils;
+import com.smartlife.utils.ToastUtil;
 import com.smartlife.xunfei.fragment.SpeechFragment;
+import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.Call;
+
 public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener {
     public String TAG = "SmartLifee/MainAct";
     private ActionBar ab;
-    private TextView tvSelectionBar,tvCategoryBar,tvRadioBar,tvMusicBar;
-    private ImageView  ivSearchBar;
+    private TextView tvSelectionBar, tvCategoryBar, tvRadioBar, tvMusicBar;
+    private ImageView ivSearchBar;
     private ArrayList<TextView> tabs = new ArrayList<>();
     private DrawerLayout drawerLayout;
     private ListView mLvLeftMenu;
@@ -71,24 +79,28 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         setContentView(R.layout.activity_main);
         getWindow().setBackgroundDrawableResource(R.color.background_material_light_1);
 
+        initView();
+        initData();
+
+        HandlerUtil.getInstance(this).postDelayed(() -> splashScreen.removeSplashScreen(), 3000);
+        // mSelectFragment.requestData();
+    }
+
+    private void initData() {
+        qinTinCredential();
+        setUpDrawer();
+    }
+
+    private void initView() {
         tvSelectionBar = (TextView) findViewById(R.id.tv_selection_bar);
-        tvCategoryBar = (TextView)findViewById(R.id.tv_category_bar);
-        tvRadioBar = (TextView)findViewById(R.id.tv_radio_bar);
-        tvMusicBar = (TextView)findViewById(R.id.tv_music_bar);
+        tvCategoryBar = (TextView) findViewById(R.id.tv_category_bar);
+        tvRadioBar = (TextView) findViewById(R.id.tv_radio_bar);
+        tvMusicBar = (TextView) findViewById(R.id.tv_music_bar);
         ivSearchBar = (ImageView) findViewById(R.id.iv_search_bar);
         drawerLayout = (DrawerLayout) findViewById(R.id.fd);
         mLvLeftMenu = (ListView) findViewById(R.id.id_lv_left_menu);
 
         setToolBar();
-        setViewPager();
-        setUpDrawer();
-        HandlerUtil.getInstance(this).postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                splashScreen.removeSplashScreen();
-            }
-        }, 3000);
-       // mSelectFragment.requestData();
     }
 
     private void setToolBar() {
@@ -98,6 +110,52 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setHomeAsUpIndicator(R.drawable.ic_menu);
         ab.setTitle("");
+    }
+
+    private void qinTinCredential() {
+
+        OkRequestEvents.qinTinCredential(Constants.QT_CLIENT_ID, Constants.QT_CLIENT_SECRET, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                Log.d(TAG, "onError");
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                Gson gson = new Gson();
+                CredentialModel credentialModel = gson.fromJson(response, CredentialModel.class);
+                Log.d(TAG, credentialModel.toString());
+                String access_token = credentialModel.getAccess_token();
+                if (StringUtils.isNotEmpty(access_token)) {
+                    MainApplication.getInstance().setAccessToken(access_token);
+                    qinTinDomainCenter(access_token);
+                    return;
+                }
+                ToastUtil.showShort("token = null");
+            }
+        });
+    }
+
+    private void qinTinDomainCenter(String access_token) {
+
+        OkRequestEvents.qinTinDomainCenter(access_token, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                Log.d(TAG, "onError");
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                Gson gson = new Gson();
+                DomainCenterModel domainCenterModel = gson.fromJson(response, DomainCenterModel.class);
+                MainApplication.getInstance().setDomainCenterModel(domainCenterModel);
+                for (DomainCenterModel.DataBean.StoredaudioM4aBean.MediacentersBeanXXX ll : domainCenterModel.getData().getStoredaudio_m4a().getMediacenters()) {
+                    Log.d(TAG, "mDomainCenterModel domain =" + ll.getDomain() + " name=" + ll.getName() + " protocol=" + ll.getProtocol());
+                    Log.d(TAG, "mDomainCenterModel access =" + ll.getAccess());
+                }
+                setViewPager();
+            }
+        });
     }
 
     private void setViewPager() {
@@ -222,7 +280,6 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
                 }
             }
         });
-        Log.d(TAG,"");
     }
 
 
@@ -330,7 +387,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         if (fragments != null) {
             for (Fragment fragment : fragments) {
                 if (fragment != null) {
-                    fragment.onRequestPermissionsResult(requestCode,permissions,grantResults);
+                    fragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
                 }
             }
         }
@@ -339,7 +396,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-//        moveTaskToBack(true);
+        //        moveTaskToBack(true);
         // System.exit(0);
         // finish();
     }

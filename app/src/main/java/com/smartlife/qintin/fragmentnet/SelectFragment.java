@@ -22,6 +22,7 @@ import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -29,9 +30,8 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
-import com.smartlife.MainApplication;
-import com.smartlife.R;
 import com.smartlife.MainActivity;
+import com.smartlife.R;
 import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.model.DianBoRecommendModel;
@@ -42,6 +42,7 @@ import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -79,7 +80,6 @@ public class SelectFragment extends AttachFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity = (MainActivity)getActivity();
-        mApplicatin = (MainApplication)getActivity().getApplication();
         mContent = (ViewGroup) inflater.inflate(R.layout.fragment_recommend_container, container, false);
 
         mLayoutInflater = LayoutInflater.from(mContext);

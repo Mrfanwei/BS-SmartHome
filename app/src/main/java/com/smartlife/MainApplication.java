@@ -3,16 +3,13 @@ package com.smartlife;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.multidex.MultiDex;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.bilibili.magicasakura.utils.ThemeUtils;
 import com.facebook.cache.disk.DiskCacheConfig;
@@ -27,7 +24,6 @@ import com.iflytek.cloud.SpeechUtility;
 import com.smartlife.dlan.manager.DlanManager;
 import com.smartlife.huanxin.DemoHelper;
 import com.smartlife.qintin.handler.UnceHandler;
-import com.smartlife.qintin.model.CredentialModel;
 import com.smartlife.qintin.model.DomainCenterModel;
 import com.smartlife.qintin.permissions.Nammu;
 import com.smartlife.qintin.provider.PlaylistInfo;
@@ -35,16 +31,12 @@ import com.smartlife.qintin.uitl.IConstants;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.uitl.ThemeHelper;
 import com.tencent.bugly.crashreport.CrashReport;
-import com.zhy.http.okhttp.OkHttpUtils;
-import com.zhy.http.okhttp.callback.StringCallback;
 
 import org.cybergarage.upnp.ControlPoint;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-
-import okhttp3.Call;
 
 /**
  * Created by wm on 2016/2/23.
@@ -56,17 +48,29 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
     private static int MAX_MEM = (int) Runtime.getRuntime().maxMemory() / 4;
     private long favPlaylist = IConstants.FAV_PLAYLIST;
     private static Gson gson;
-    CredentialModel mCredentialModel=null;
-    DomainCenterModel mDomainCenterModel=null;
+
+    String mAccessToken;
+
+    DomainCenterModel mDomainCenterModel = null;
     private DlanManager mDlanManager;
     public ControlPoint mControlPoint;
 
-    QinTinTask mQinTinCredentTask=null;
-    QinTinTask mQinTinDomainTask=null;
-    QinTinTask mDlanTask=null;
     private static MainApplication instance;
+
+    private Handler mHandler;
+
+    private int mMainThreadId;
+
     public static MainApplication getInstance() {
         return instance;
+    }
+
+    public Handler getHandler() {
+        return mHandler;
+    }
+
+    public int getMainThreadId() {
+        return mMainThreadId;
     }
 
     public static Gson gsonInstance() {
@@ -144,7 +148,9 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
 
         context = getApplicationContext();
         instance = this;
-        qinTinCredential();
+        mHandler = new Handler();
+        mMainThreadId = android.os.Process.myTid();
+
         frescoInit();
         super.onCreate();
         buglyInit();
@@ -165,32 +171,34 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
 
         SharedPreferences settings = getSharedPreferences("userinfo", MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString("phoneid","211");
-        editor.putString("robotid","213");
+        editor.putString("phoneid", "211");
+        editor.putString("robotid", "213");
         editor.commit();
 
         xunFeiInit();
     }
 
-    private void buglyInit(){
+    private void buglyInit() {
         String packageName = context.getPackageName();
         String processName = getProcessName(android.os.Process.myPid());
         CrashReport.UserStrategy strategy = new CrashReport.UserStrategy(context);
         strategy.setUploadProcess(processName == null || processName.equals(packageName));
-        CrashReport.initCrashReport(getApplicationContext(),"b3e7148288",true, strategy);
-       // CrashReport.initCrashReport(getApplicationContext(),"b3e7148288", true,strategy);
+        CrashReport.initCrashReport(getApplicationContext(), "b3e7148288", true, strategy);
+        // CrashReport.initCrashReport(getApplicationContext(),"b3e7148288", true,strategy);
     }
 
-    private void xunFeiInit(){
+    private void xunFeiInit() {
         StringBuffer param = new StringBuffer();
-        param.append("appid="+getString(R.string.xunfei_app_id));
+        param.append("appid=" + getString(R.string.xunfei_app_id));
         param.append(",");
         // 设置使用v5+
-        param.append(SpeechConstant.ENGINE_MODE+"="+SpeechConstant.MODE_MSC);
+        param.append(SpeechConstant.ENGINE_MODE + "=" + SpeechConstant.MODE_MSC);
         SpeechUtility.createUtility(MainApplication.this, param.toString());
     }
 
-    public DlanManager getmDlanManager(){ return mDlanManager;}
+    public DlanManager getmDlanManager() {
+        return mDlanManager;
+    }
 
     private static String getProcessName(int pid) {
         BufferedReader reader = null;
@@ -283,105 +291,24 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
         return -1;
     }
 
-    public String getAccessToken(){
-        if(mCredentialModel == null)
-            return null;
-        return mCredentialModel.getAccess_token();
+    public void setAccessToken(String accessToken) {
+        mAccessToken = accessToken;
     }
 
-    public String getDomainUrl(){
+    public String getAccessToken() {
+        return mAccessToken;
+    }
+
+    public String getDomainUrl() {
         return mDomainCenterModel.getData().getStoredaudio_m4a().getMediacenters().get(0).getDomain();
     }
 
-    Handler mHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch(msg.what){
-                case 0:
-                    qinTinDomainCenter();
-                    break;
-            }
-        }
-    };
-
-    private void   qinTinCredential(){
-
-        if (mQinTinCredentTask == null || mQinTinCredentTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mQinTinCredentTask = new QinTinTask();
-            mQinTinCredentTask.execute(0, 0, 1);
-        }
-    }
-
-    private void   qinTinDomainCenter(){
-        if (mQinTinDomainTask == null || mQinTinDomainTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mQinTinDomainTask = new QinTinTask();
-            mQinTinDomainTask.execute(0, 0, 2);
-        }
-    }
-
-    private void dlanStart(){
-        if (mDlanTask == null || mDlanTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mDlanTask = new QinTinTask();
-            mDlanTask.execute(0, 0, 3);
-        }
-    }
-
-    class QinTinTask extends AsyncTask<Integer, Integer, Integer> {
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            switch (integers[2]) {
-                case 1:
-                    OkHttpUtils
-                            .post()
-                            .url("http://api.open.qingting.fm/access?&grant_type=client_credentials")
-                            .addParams("client_id", "ZmRlMWQxYTItMmE3YS0xMWU3LTkyM2YtMDAxNjNlMDAyMGFk")
-                            .addParams("client_secret", "YTExMzJiNDgtY2UwOS0zMDEwLWFlN2EtMmFjNzk4ZWQyZjVl")
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    Gson gson = new Gson();
-                                    mCredentialModel = gson.fromJson(response, CredentialModel.class);
-                                    Log.d(TAG,"access_token ="+ mCredentialModel.getAccess_token()+" getToken_type="+mCredentialModel.getToken_type());
-                                    mHandler.sendEmptyMessage(0);
-                                }
-                            });
-                    break;
-                case 2:
-                    OkHttpUtils
-                            .post()
-                            .url("http://api.open.qingting.fm/v6/media/mediacenterlist")
-                            .addParams("access_token",mCredentialModel.getAccess_token())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    Gson gson = new Gson();
-                                    mDomainCenterModel = gson.fromJson(response, DomainCenterModel.class);
-                                    for(DomainCenterModel.DataBean.StoredaudioM4aBean.MediacentersBeanXXX ll:mDomainCenterModel.getData().getStoredaudio_m4a().getMediacenters()){
-                                        Log.d(TAG,"mDomainCenterModel domain ="+ ll.getDomain()+" name="+ll.getName()+" protocol="+ll.getProtocol());
-                                        Log.d(TAG,"mDomainCenterModel access ="+ll.getAccess());
-                                    }
-                                }
-                            });
-                    break;
-            }
-            return null;
-        }
-    }
 
     public void setControlPoint(ControlPoint controlPoint) {
         mControlPoint = controlPoint;
+    }
+
+    public void setDomainCenterModel(DomainCenterModel domainCenterModel) {
+        mDomainCenterModel = domainCenterModel;
     }
 }

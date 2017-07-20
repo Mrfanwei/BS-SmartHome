@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -19,7 +20,6 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
-import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.activity.PlaylistActivity;
@@ -32,6 +32,7 @@ import com.smartlife.qintin.widget.DividerItemDecoration;
 import com.smartlife.qintin.widget.SwipeRefreshLayout;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,7 +75,6 @@ public class CategoryListFragment extends AttachFragment {
                              Bundle savedInstanceState) {
         Log.d(TAG,"onCreateView");
         mActivity = (CategoryDirectoryActivity)getActivity();
-        mApplicatin = (MainApplication)getActivity().getApplication();
         view = inflater.inflate(R.layout.fragment_list, container, false);
         setList();
         return view;
