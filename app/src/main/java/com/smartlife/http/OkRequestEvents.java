@@ -1,5 +1,6 @@
 package com.smartlife.http;
 
+import com.smartlife.huanxin.DemoHelper;
 import com.smartlife.utils.Constants;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
@@ -83,5 +84,25 @@ public class OkRequestEvents {
         params.put("access_token", access_token);
 
         postImpl("http://api.open.qingting.fm/v6/media/mediacenterlist", callback, params, null);
+    }
+
+    /**
+     * 取消绑定robot
+     * */
+    public static void unBindRobot(String phoneid,String robotname,StringCallback callback){
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("phoneid",phoneid);
+        params.put("robotname", robotname);
+        postImpl("http://112.74.175.96:8080/unBindRobot", callback, params, null);
+    }
+
+    /**
+     * 获取绑定robot信息
+     * */
+    public static void getrobotinfo(StringCallback callback){
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("phoneid", DemoHelper.getInstance().getCurrentUsernName());
+
+        postImpl("http://112.74.175.96:8080/getRobotInfo", callback, params, null);
     }
 }

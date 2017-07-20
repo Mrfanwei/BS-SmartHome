@@ -72,9 +72,9 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     MusicFragment mMusicFragment;
 
     public void onCreate(Bundle savedInstanceState) {
-        splashScreen = new SplashScreen(this);
-        splashScreen.show(R.drawable.art_login_bg,
-                SplashScreen.SLIDE_LEFT);
+//        splashScreen = new SplashScreen(this);
+//        splashScreen.show(R.drawable.art_login_bg,
+//                SplashScreen.SLIDE_LEFT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().setBackgroundDrawableResource(R.color.background_material_light_1);
@@ -82,7 +82,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         initView();
         initData();
 
-        HandlerUtil.getInstance(this).postDelayed(() -> splashScreen.removeSplashScreen(), 3000);
+//        HandlerUtil.getInstance(this).postDelayed(() -> splashScreen.removeSplashScreen(), 3000);
         // mSelectFragment.requestData();
     }
 
@@ -356,7 +356,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        splashScreen.removeSplashScreen();
+//        splashScreen.removeSplashScreen();
     }
 
     /**

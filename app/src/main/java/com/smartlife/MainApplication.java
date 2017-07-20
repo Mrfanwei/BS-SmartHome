@@ -38,9 +38,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-/**
- * Created by wm on 2016/2/23.
- */
 public class MainApplication extends Application implements ThemeUtils.switchColor {
     private String TAG = "SmartLifee/MainApp";
     public static String currentUserNick = "";
@@ -159,7 +156,6 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
             Nammu.init(this);
         }
         ThemeUtils.setSwitchColor(this);
-        // initCatchException();
         if (!PreferencesUtility.getInstance(this).getFavriateMusicPlaylist()) {
             PlaylistInfo.getInstance(this).addPlaylist(favPlaylist, getResources().getString(com.smartlife.R.string.my_fav_playlist),
                     0, "res:/" + com.smartlife.R.mipmap.lay_protype_default, "local");
@@ -168,12 +164,6 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
 
         DemoHelper.getInstance().init(context);
         mDlanManager = DlanManager.getInstance(getApplicationContext());
-
-        SharedPreferences settings = getSharedPreferences("userinfo", MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("phoneid", "211");
-        editor.putString("robotid", "213");
-        editor.commit();
 
         xunFeiInit();
     }
@@ -184,7 +174,6 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
         CrashReport.UserStrategy strategy = new CrashReport.UserStrategy(context);
         strategy.setUploadProcess(processName == null || processName.equals(packageName));
         CrashReport.initCrashReport(getApplicationContext(), "b3e7148288", true, strategy);
-        // CrashReport.initCrashReport(getApplicationContext(),"b3e7148288", true,strategy);
     }
 
     private void xunFeiInit() {
