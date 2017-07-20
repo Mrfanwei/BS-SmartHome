@@ -61,6 +61,8 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
     private DlanManager mDlanManager;
     public ControlPoint mControlPoint;
 
+    private String username = "18825281243";
+
     QinTinTask mQinTinCredentTask=null;
     QinTinTask mQinTinDomainTask=null;
     QinTinTask mDlanTask=null;
@@ -160,13 +162,13 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
             PreferencesUtility.getInstance(this).setFavriateMusicPlaylist(true);
         }
 
-        DemoHelper.getInstance().init(context);
+        DemoHelper.getInstance().init(this);
         mDlanManager = DlanManager.getInstance(getApplicationContext());
 
         SharedPreferences settings = getSharedPreferences("userinfo", MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString("phoneid","211");
-        editor.putString("robotid","213");
+        editor.putString("phoneid",username);
+        editor.putString("robotid",username);
         editor.commit();
 
         xunFeiInit();

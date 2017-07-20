@@ -18,55 +18,6 @@
             android:background="?android:attr/selectableItemBackground"
             android:textColor="@color/text_color"
             android:textSize="20sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/et_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="name"/>
-
-            <EditText
-                android:id="@+id/et_pwd"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="password"/>
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tv_login_in"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_weight="1"
-            android:background="?android:attr/selectableItemBackground"
-            android:text="登录"
-            android:gravity="center_vertical"
-            android:textColor="@color/text_color"
-            android:textSize="15sp" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <EditText
-                android:id="@+id/et_call"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:hint="call"/>
-
-            <Button
-                android:id="@+id/btn_call"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="呼叫"/>
-        </LinearLayout>
     </LinearLayout>
 
     <com.smartlife.qintin.widget.SwipeRefreshLayout

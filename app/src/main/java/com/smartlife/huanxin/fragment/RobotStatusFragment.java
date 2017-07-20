@@ -69,18 +69,16 @@ import okhttp3.Call;
 public class RobotStatusFragment extends DialogFragment implements View.OnClickListener {
 
     private String TAG = "SmartLife/RobotStatus";
-    private RobotTask mLoginTask;
     private RobotTask mCallTask;
     public MainActivity mActivity;
     public Activity mContext;
-    private EditText etName;
-    private EditText etPwd;
-    private EditText etCall;
     private SwipeMenuListView robots_bind;
     private SwipeRefreshLayout refreshableView;
     private long time;
     private static List<RobotModel.DataBean> list_robots;
     private SharedPreferences sharedPreferences;
+    private boolean isFirstLoad = true;
+    private String username = "18825281243";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -90,8 +88,6 @@ public class RobotStatusFragment extends DialogFragment implements View.OnClickL
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         View view = inflater.inflate(R.layout.fragment_robot_status, container);
-        (view.findViewById(R.id.tv_login_in)).setOnClickListener(this);
-        (view.findViewById(R.id.btn_call)).setOnClickListener(this);
         robots_bind = (SwipeMenuListView) view.findViewById(R.id.robotlist_bind);
         refreshableView = (SwipeRefreshLayout) view.findViewById(R.id.refresh_bind);
         robots_bind.setOnItemClickListener(itemClickListener);
@@ -117,29 +113,13 @@ public class RobotStatusFragment extends DialogFragment implements View.OnClickL
             }
         });
 
-        etName=(EditText) view.findViewById(R.id.et_name);
-        etPwd=(EditText) view.findViewById(R.id.et_pwd);
-        etCall = (EditText)view.findViewById(R.id.et_call);
         return view;
     }
 
+
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.tv_login_in:
-                if (mLoginTask == null || mLoginTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-                    mLoginTask = new RobotTask();
-                    mLoginTask.execute(etName.getText().toString(),etPwd.getText().toString(),"2");
-                }
-                NettyManager.getInstance(getActivity().getApplicationContext()).startSocket();
-                break;
-            case R.id.btn_call:
-                if (mCallTask == null || mCallTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-                    mCallTask = new RobotTask();
-                    mCallTask.execute(etCall.getText().toString(),null, "3");
-                }
-                break;
-        }
+
     }
 
     @Override
@@ -242,8 +222,8 @@ public class RobotStatusFragment extends DialogFragment implements View.OnClickL
         list_robots.clear();
         OkHttpUtils
                 .post()
-                .url("http://192.168.0.6:8080/getRobotInfo")
-                .addParams("phoneid","fanwei")
+                .url("http://112.74.175.96:8080/getRobotInfo")
+                .addParams("phoneid",username)
                 .build()
                 .execute(new StringCallback() {
                     @Override
@@ -257,12 +237,17 @@ public class RobotStatusFragment extends DialogFragment implements View.OnClickL
                         RobotModel mRobotModel;
                         Gson gson = new Gson();
                         mRobotModel = gson.fromJson(response,RobotModel.class);
+                        if(mRobotModel == null){
+                            return;
+                        }
                         for(RobotModel.DataBean mdata:mRobotModel.getData()){
                             list_robots.add(mdata);
                         }
                         if(list_robots.size()>0){
                             handler.sendEmptyMessage(2);
                         }
+                        refreshableView.setRefreshing(false);
+                        refreshableView.setEnabled(true);
                     }
                 });
     }
@@ -280,6 +265,7 @@ public class RobotStatusFragment extends DialogFragment implements View.OnClickL
                 ToastUtil.showtomain(getActivity(), "机器人已被控制");
                 return;
             }
+
             if (mCallTask == null || mCallTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
                 mCallTask = new RobotTask();
                 mCallTask.execute(list_robots.get(position).getRname(),null, "3");
@@ -479,38 +465,28 @@ public class RobotStatusFragment extends DialogFragment implements View.OnClickL
         Log.d(TAG,"");
     }
 
-    private void huanxinlogin(final String currentUsername,
-                              final String currentPassword) {
+    private void huanxinlogin() {
         if (!CommonUtils.isNetWorkConnected(getActivity())) {
             Toast.makeText(getActivity(), R.string.network_isnot_available,
                     Toast.LENGTH_SHORT).show();
             return;
         }
-        if (TextUtils.isEmpty(currentUsername)) {
-            Toast.makeText(getActivity(), R.string.User_name_cannot_be_empty,
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (TextUtils.isEmpty(currentPassword)) {
-            Toast.makeText(getActivity(), R.string.Password_cannot_be_empty,
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
 
-//        if (getActivity().getSharedPreferences("huanxin", getActivity().MODE_PRIVATE).getString("username",
-//                null) == null) {
-        if (!getActivity().getSharedPreferences("huanxin", getActivity().MODE_PRIVATE).getString("username",
-                " ").equals(currentUsername)) {
+        Log.d(TAG,"huanxinlogin");
+
+        if (getActivity().getSharedPreferences("userinfo", getActivity().MODE_PRIVATE).getString("username",
+                null) == null) {
             try {
-                EMClient.getInstance().createAccount(currentUsername,currentPassword);
+                EMClient.getInstance().createAccount(username,username);
+                Log.d(TAG,"huanxinlogin1");
             } catch (HyphenateException e) {
                 e.printStackTrace();
             }
-
-            getActivity().getSharedPreferences("huanxin", getActivity().MODE_PRIVATE)
+            Log.d(TAG,"huanxinlogin2");
+            getActivity().getSharedPreferences("userinfo", getActivity().MODE_PRIVATE)
                     .edit()
-                    .putString("username", currentUsername)
-                    .putString("password", currentPassword)
+                    .putString("phoneid",username)
+                    .putString("phoneid",username)
                     .commit();
         }
 
@@ -571,7 +547,8 @@ public class RobotStatusFragment extends DialogFragment implements View.OnClickL
         protected String doInBackground(String... strings) {
             switch (strings[2]){
                 case "2":
-                    huanxinlogin(strings[0],strings[1]);
+                    huanxinlogin();
+                    //NettyManager.getInstance(getActivity().getApplicationContext()).startSocket();
                     break;
                 case "3":
                     tovideo("chat",strings[0]);

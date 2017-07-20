@@ -728,4 +728,22 @@
     <string name="title">Title</string>
     <string name="artist">Artist</string>
     <string name="album">Album</string>
+
+    <string name="app_slogon">my service</string>
+
+    <string name="Confirm_password_cannot_be_empty">Confirm password cannot be empty!</string>
+    <string name="Two_input_password">Inconsistent password, please enter again!</string>
+    <string name="Is_the_registered">Registering..</string>
+    <string name="Registered_successfully">Registered successfully</string>
+
+    <string name="network_anomalies">Network is not available, please check the network!</string>
+    <string name="User_already_exists">User already existed!</string>
+    <string name="registration_failed_without_permission">Registration failed, without permission!</string>
+    <string name="Registration_failed">Registration failed</string>
+
+    <string name="user_name">User name</string>
+    <string name="password">Password</string>
+    <string name="register">Register</string>
+    <string name="login">Login</string>
+    <string name="confirmpassword">Confirm password</string>
 </resources>

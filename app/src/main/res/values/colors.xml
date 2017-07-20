@@ -361,4 +361,10 @@
     <color name="back_perss">#00FFFF</color>
     <color name="black_deep">#FF000000</color>
     <color name="btn_green_noraml">#68C270</color>
+
+    <color name="btn_register_pressed">#00acff</color>
+    <color name="btn_register_normal">#ffffff</color>
+
+    <color name="btn_login_normal">#00acff</color>
+    <color name="btn_login_pressed">#46678d</color>
 </resources>

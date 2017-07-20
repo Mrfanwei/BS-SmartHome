@@ -203,6 +203,20 @@
             </intent-filter>
         </activity>
 
+        <!-- 登陆 -->
+        <activity
+            android:name=".LoginActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:windowSoftInputMode="adjustResize|stateVisible" />
+
+        <!-- 注册 -->
+        <activity
+            android:name=".RegisterActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:windowSoftInputMode="adjustResize|stateVisible" />
+
         <!-- 有米SDK为了兼容Android N应用间共享文件行为变更而需要配置的FileProvider -->
         <!-- 这里主要为授予有米SDK拥有打开apk安装界面的功能 -->
         <!-- 请务必修改 android:authorities 为贵应用的标识，一般为 包名.fileProvider -->

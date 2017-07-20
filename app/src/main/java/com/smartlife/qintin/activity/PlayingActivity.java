@@ -1157,8 +1157,8 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
                     OkHttpUtils
                             .post()
                             .url("http://112.74.175.96:8080/insertMusicData")
-                            .addParams("phone","zzz66677")
-                            .addParams("parentid","zz999977")
+                            .addParams("phone","pzz66677")
+                            .addParams("parentid","pz999977")
                             .addParams("filepath",filepath)
                             .addParams("albumid",Integer.toString(albumid))
                             .build()
@@ -1178,7 +1178,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
                     OkHttpUtils
                             .post()
                             .url("http://112.74.175.96:8080/getMusicInfo")
-                            .addParams("phonename", "1866666")
+                            .addParams("phonename", "pzz66677")
                             .build()
                             .execute(new StringCallback() {
                                 @Override
