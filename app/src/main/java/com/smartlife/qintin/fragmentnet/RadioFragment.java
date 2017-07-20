@@ -30,14 +30,13 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
-import com.smartlife.MainApplication;
+import com.smartlife.MainActivity;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
-import com.smartlife.MainActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.model.ZhiBoCategoryModel;
-import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean.ValuesBean;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean;
+import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean.ValuesBean;
 import com.smartlife.qintin.model.ZhiBoRadioList;
 import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
@@ -80,7 +79,6 @@ public class RadioFragment extends AttachFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mActivity = (MainActivity)getActivity();
-        mApplicatin = (MainApplication)getActivity().getApplication();
         mContent = (ViewGroup) inflater.inflate(R.layout.fragment_radio_container, container, false);
 
         mLayoutInflater = LayoutInflater.from(mContext);
