@@ -11,6 +11,7 @@ import android.util.Log;
 import com.smartlife.netty.listener.NettyManagerListener;
 import com.smartlife.netty.service.INettyCallback;
 import com.smartlife.netty.service.INettyManager;
+import com.smartlife.netty.service.SocketService;
 import com.smartlife.netty.utils.NettyHandler;
 import com.smartlife.netty.utils.NettyHandlerUtils;
 import com.smartlife.utils.Constants;
@@ -27,13 +28,13 @@ public class NettyManager {
     private INettyCallback callback;
     private NettyHandler mNettyHandler;
 
-    private NettyManager(Context mContext){
+    private NettyManager(Context mContext) {
         this.callback = new NettyCallbackStub();
         mNettyHandler = NettyHandler.getNettyHandler();
-        bindService(mContext,conn);
+        bindService(mContext, conn);
     }
 
-    public static NettyManager getInstance(Context mContext){
+    public static NettyManager getInstance(Context mContext) {
         if (mNettyStubManager == null) {
             synchronized (NettyManager.class) {
                 if (mNettyStubManager == null) {
@@ -45,8 +46,8 @@ public class NettyManager {
         return mNettyStubManager;
     }
 
-    void bindService(Context mContext,ServiceConnection conn){
-        Intent intent = new Intent(Constants.NETTY_SERVICE);
+    void bindService(Context mContext, ServiceConnection conn) {
+        Intent intent = new Intent(mContext, SocketService.class);
         mContext.bindService(intent, conn, Context.BIND_AUTO_CREATE);
     }
 
@@ -55,7 +56,7 @@ public class NettyManager {
         public void onServiceConnected(ComponentName name, IBinder service) {
             if (mNettyCommand == null) {
                 mNettyCommand = INettyManager.Stub.asInterface(service);
-                if(callback != null){
+                if (callback != null) {
                     try {
                         mNettyCommand.registerINettyCallback(callback);
                     } catch (RemoteException e) {
@@ -72,75 +73,75 @@ public class NettyManager {
         }
     };
 
-    public void startSocket(){
+    public void startSocket() {
         try {
-            if(mNettyCommand != null)
+            if (mNettyCommand != null)
                 mNettyCommand.startSocket();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    public void turnLeft(){
+    public void turnLeft() {
         try {
-            if(mNettyCommand != null)
+            if (mNettyCommand != null)
                 mNettyCommand.turnLeft();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    public void turnRight(){
+    public void turnRight() {
         try {
-            if(mNettyCommand != null)
+            if (mNettyCommand != null)
                 mNettyCommand.turnRight();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    public void turnUp(){
+    public void turnUp() {
         try {
-            if(mNettyCommand != null)
+            if (mNettyCommand != null)
                 mNettyCommand.turnUp();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    public void turnDown(){
+    public void turnDown() {
         try {
-            if(mNettyCommand != null)
+            if (mNettyCommand != null)
                 mNettyCommand.turnDown();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    public void stopSocket(){
+    public void stopSocket() {
         try {
-            if(mNettyCommand != null)
+            if (mNettyCommand != null)
                 mNettyCommand.stopSocket();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    public void collectionLike(){
+    public void collectionLike() {
         try {
-            if(mNettyCommand != null)
+            if (mNettyCommand != null)
                 mNettyCommand.collectionLike();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
 
-    class NettyCallbackStub extends INettyCallback.Stub{
+    class NettyCallbackStub extends INettyCallback.Stub {
 
         @Override
         public void onCollectionLike(String phoneid) throws RemoteException {
-            Log.d(TAG,"onCollectionLike phoneid="+phoneid);
-            NettyHandlerUtils.sendMessage(mNettyHandler, Constants.a,0,null);
+            Log.d(TAG, "onCollectionLike phoneid=" + phoneid);
+            NettyHandlerUtils.sendMessage(mNettyHandler, Constants.a, 0, null);
         }
     }
 
