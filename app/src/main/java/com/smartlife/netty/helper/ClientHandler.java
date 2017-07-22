@@ -21,6 +21,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
     private static final String TAG = "SmartLife/ClientHan";
     static String username = "";
     static String destname = "";
+    static boolean verify = false;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws IOException {
@@ -61,6 +62,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
             switch (code) {
                 case Constants.VERYFY_PASSED:
                     Log.d(TAG,"VERYFY_PASSED = "+ desc);
+                    verify = true;
                     break;
                 case Constants.ACCOUNT_INEXIST:
                     Log.d(TAG,"ACCOUNT_INEXIST = "+desc);
@@ -93,14 +95,16 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
     }
 
     public static void sendMessage(String command) {
+        if(verify){
+            Chat.CPrivateChat.Builder cp = Chat.CPrivateChat.newBuilder();
+            cp.setContent(command);
+            cp.setSelf(username);
+            cp.setDest(destname);
 
-        Chat.CPrivateChat.Builder cp = Chat.CPrivateChat.newBuilder();
-        cp.setContent(command);
-        cp.setSelf(username);
-        cp.setDest(destname);
+            ByteBuf byteBuf = Utils.pack2Client(cp.build());
+            _gateClientConnection.writeAndFlush(byteBuf);
+        }
 
-        ByteBuf byteBuf = Utils.pack2Client(cp.build());
-        _gateClientConnection.writeAndFlush(byteBuf);
     }
 
     @Override
