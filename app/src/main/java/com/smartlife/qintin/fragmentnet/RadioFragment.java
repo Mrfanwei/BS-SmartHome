@@ -32,6 +32,7 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
 import com.smartlife.R;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.model.ZhiBoCategoryModel;
@@ -68,9 +69,6 @@ public class RadioFragment extends AttachFragment {
     private LoodView mLoodView;
     public MainActivity mActivity;
     private boolean isFirstLoad = true;
-
-    RadioCategoryTask mRadioCategoryTask=null;
-    RadioCategoryTask mRadioCategoryTask1=null;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
@@ -117,21 +115,9 @@ public class RadioFragment extends AttachFragment {
         if(isVisibleToUser && isFirstLoad){
             if(mLoodView != null)
                 mLoodView.requestFocus();
-            requestData();
+            radioCategory();
+            radioWeek();
             isFirstLoad = false;
-        }
-    }
-
-    public void requestData(){
-
-        if (mRadioCategoryTask == null || mRadioCategoryTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mRadioCategoryTask = new RadioCategoryTask();
-            mRadioCategoryTask.execute(0, 0, 1);
-        }
-
-        if (mRadioCategoryTask1 == null || mRadioCategoryTask1.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mRadioCategoryTask1 = new RadioCategoryTask();
-            mRadioCategoryTask1.execute(0, 0, 2);
         }
     }
 
@@ -328,88 +314,64 @@ public class RadioFragment extends AttachFragment {
         }
     }
 
-    class RadioCategoryTask extends AsyncTask<Integer, Integer, Integer>{
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            if (NetworkUtils.isConnectInternet(mContext)) {
-                isFromCache = false;
+    private void radioCategory(){
+        OkRequestEvents.radioCategory(mApplicatin.getAccessToken(), new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
             }
 
-            switch (integers[2]){
-                case 1:
-                    String mDianboCategoryRecommendUrl = "http://api.open.qingting.fm/v6/media/categories/5";
-                    OkHttpUtils
-                            .post()
-                            .url(mDianboCategoryRecommendUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
+            @Override
+            public void onResponse(String response, int id) {
+                ZhiBoCategoryModel mZhiBoCategoryModel;
+                List<ValuesBean> mContentCategoryList = new ArrayList<>();
+                ContentCategoryListAdapter mAdapter = new ContentCategoryListAdapter(null);
 
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    ZhiBoCategoryModel mZhiBoCategoryModel;
-                                    List<ValuesBean> mContentCategoryList = new ArrayList<>();
-                                    ContentCategoryListAdapter mAdapter = new ContentCategoryListAdapter(null);
-
-                                    Gson gson = new Gson();
-                                    mZhiBoCategoryModel = gson.fromJson(response,ZhiBoCategoryModel.class);
-                                    mViewContent.removeView(mLoadView);
-                                    for(DataBean mdata:mZhiBoCategoryModel.getData()){
-                                        if(mdata.getName().contains("类型")){
-                                            for(ValuesBean mvalue:mdata.getValues()){
-                                                mContentCategoryList.add(mvalue);
-                                            }
-                                            ValuesBean mValuesBean = new ValuesBean();
-                                            mValuesBean.setName("more");
-                                            mContentCategoryList.add(mValuesBean);
-                                            showContentCategoryList(mdata.getName(),mAdapter);
-                                            mAdapter.update(mContentCategoryList);
-                                        }
-                                    }
-                                }
-                            });
-                    break;
-                case 2:
-                    String mweek;
-                    final Calendar c = Calendar.getInstance();
-                    mweek = String.valueOf(c.get(Calendar.DAY_OF_WEEK));
-                    String mZhiBoRadioListUrl = "http://api.open.qingting.fm/v6/media/recommends/nowplaying/day/" + mweek;
-                    Log.d(TAG,"Calendar mweek = "+mweek);
-                    OkHttpUtils
-                            .post()
-                            .url(mZhiBoRadioListUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    ZhiBoRadioList mZhiBoRadioList;
-                                    List<ZhiBoRadioList.DataBean> mPlayingRadioList = new ArrayList<>();
-                                    PlayingAdapter mAdapter = new PlayingAdapter(null);
-
-                                    Gson gson = new Gson();
-                                    mZhiBoRadioList = gson.fromJson(response, ZhiBoRadioList.class);
-                                    mViewContent.removeView(mLoadView);
-                                    for(ZhiBoRadioList.DataBean mdata:mZhiBoRadioList.getData()){
-                                        mPlayingRadioList.add(mdata);
-                                    }
-                                    showPlayingList("zhiboplay",mAdapter);
-                                    mAdapter.update(mPlayingRadioList);
-                                }
-                            });
-                    break;
+                Gson gson = new Gson();
+                mZhiBoCategoryModel = gson.fromJson(response,ZhiBoCategoryModel.class);
+                mViewContent.removeView(mLoadView);
+                for(DataBean mdata:mZhiBoCategoryModel.getData()){
+                    if(mdata.getName().contains("类型")){
+                        for(ValuesBean mvalue:mdata.getValues()){
+                            mContentCategoryList.add(mvalue);
+                        }
+                        ValuesBean mValuesBean = new ValuesBean();
+                        mValuesBean.setName("more");
+                        mContentCategoryList.add(mValuesBean);
+                        showContentCategoryList(mdata.getName(),mAdapter);
+                        mAdapter.update(mContentCategoryList);
+                    }
+                }
             }
-            return null;
-        }
+        });
+    }
+
+    private void radioWeek(){
+        String mweek;
+        final Calendar c = Calendar.getInstance();
+        mweek = String.valueOf(c.get(Calendar.DAY_OF_WEEK));
+        OkRequestEvents.radioWeek(mApplicatin.getAccessToken(), mweek, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                ZhiBoRadioList mZhiBoRadioList;
+                List<ZhiBoRadioList.DataBean> mPlayingRadioList = new ArrayList<>();
+                PlayingAdapter mAdapter = new PlayingAdapter(null);
+
+                Gson gson = new Gson();
+                mZhiBoRadioList = gson.fromJson(response, ZhiBoRadioList.class);
+                mViewContent.removeView(mLoadView);
+                for(ZhiBoRadioList.DataBean mdata:mZhiBoRadioList.getData()){
+                    mPlayingRadioList.add(mdata);
+                }
+                showPlayingList("zhiboplay",mAdapter);
+                mAdapter.update(mPlayingRadioList);
+            }
+        });
     }
 
     public void showPlayingList(String title,PlayingAdapter adapter){

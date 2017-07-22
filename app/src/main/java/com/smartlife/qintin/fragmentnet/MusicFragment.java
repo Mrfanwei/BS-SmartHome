@@ -35,6 +35,7 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
 import com.smartlife.R;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
@@ -78,12 +79,7 @@ public class MusicFragment extends AttachFragment {
     private int musicsectionid;
     private List<CategoryPropertyModel.DataBean.ValuesBean > mCategoryPropertyList;
     private List<CategoryPropertyModel.DataBean> mDataBean;
-    private int mid;
     MusicListAdapter mMusicRecommendAdapter;
-
-    MusicCategoryTask mMusicTask=null;
-    MusicCategoryTask mMusicCategoryTask=null;
-    MusicCategoryTask mMusicListTask=null;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
@@ -130,17 +126,9 @@ public class MusicFragment extends AttachFragment {
         if(isVisibleToUser && isFirstLoad){
             if(mLoodView != null)
                 mLoodView.requestFocus();
-            requestData();
+            dianBoCategoryProgram();
             isFirstLoad = false;
         }
-    }
-
-    public void requestData(){
-        if (mMusicTask == null || mMusicTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mMusicTask = new MusicCategoryTask();
-            mMusicTask.execute(0, 0, 1);
-        }
-
     }
 
     @Override
@@ -319,154 +307,117 @@ public class MusicFragment extends AttachFragment {
             super.handleMessage(msg);
             switch (msg.what){
                 case 0:
-                    if (mMusicCategoryTask == null || mMusicCategoryTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-                        mMusicCategoryTask = new MusicCategoryTask();
-                        mMusicCategoryTask.execute(0, 0, 2);
-                    }
+                    dianBoMusicAlbum();
                     break;
                 case 1:
-                    if (mMusicListTask == null || mMusicListTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-                        mMusicListTask = new MusicCategoryTask();
-                        mMusicListTask.execute(0, 0, 3);
-                    }
+                    dianboMusic();
                     break;
             }
         }
     };
 
-    class MusicCategoryTask extends AsyncTask<Integer, Integer, Integer>{
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            if (NetworkUtils.isConnectInternet(mContext)) {
-                isFromCache = false;
+    private void dianBoCategoryProgram(){
+        OkRequestEvents.dianBoCategoryProgram(mApplicatin.getAccessToken(), new StringCallback(){
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
             }
 
-            switch (integers[2]){
-                case 1:
-                    String mDianboCategoryRecommendUrl = "http://api.open.qingting.fm/v6/media/categories";
-                    OkHttpUtils
-                            .post()
-                            .url(mDianboCategoryRecommendUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError14");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-
-                                    List<DataBean> mList = new ArrayList<>();
-                                    DianBoModel mDianBoModel=null;
-                                    int count =0;
-                                    Gson gson = new Gson();
-                                    mDianBoModel = gson.fromJson(response,DianBoModel.class);
-                                    mViewContent.removeView(mLoadView);
-                                    for(DianBoModel.DataBean mData : mDianBoModel.getData()){
-                                        if(mData.getName().equals("音乐")){
-                                            musicalbumid=mData.getId();
-                                            musicsectionid = mData.getSection_id();
-                                            HandlerUtil.sendmsg(mHandler,null,0);
-                                        }
-                                    }
-                                }
-                            });
-                    break;
-                case 2:
-                    String mDianboegoryRecommendUrl = "http://api.open.qingting.fm/v6/media/categories/"+musicalbumid;
-                    OkHttpUtils
-                            .post()
-                            .url(mDianboegoryRecommendUrl)
-                            .addParams("access_token", mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback(){
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    CategoryPropertyModel mCategoryPropertyModel;
-                                    ContentCategoryListAdapter mAdapter = new ContentCategoryListAdapter(null);
-
-                                    Gson gson = new Gson();
-                                    mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
-                                    mViewContent.removeView(mLoadView);
-                                    for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
-                                        if(mdata.getName().equals("内容")){
-                                            mid = mdata.getId();
-                                            for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
-                                                mCategoryPropertyList.add(mvalue);
-                                            }
-                                            CategoryPropertyModel.DataBean.ValuesBean mValuesBean = new CategoryPropertyModel.DataBean.ValuesBean();
-                                            mValuesBean.setName("more");
-                                            mCategoryPropertyList.add(mValuesBean);
-                                            showContentCategoryList(mdata.getName(),mAdapter);
-                                            mAdapter.update(mCategoryPropertyList);
-                                        }
-                                    }
-                                    HandlerUtil.sendmsg(mHandler,null,1);
-                                }
-                            });
-                    break;
-                case 3:
-                    String mRecommandMusicUrl = "http://api.open.qingting.fm/v6/media/recommends/guides/section/" + musicsectionid ;
-                    OkHttpUtils
-                            .post()
-                            .url(mRecommandMusicUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    DianBoRecommendModel mDianBoRecommendModel;
-                                    List<DianBoRecommendModel.DataBean.RecommendsBean> mRecommendList;
-                                    LoodModel mLoodModel;
-                                    List<LoodModel> mLoodModelList = new ArrayList<>();
-
-                                    Gson gson = new Gson();
-                                    mDianBoRecommendModel = gson.fromJson(response, DianBoRecommendModel.class);
-                                    mViewContent.removeView(mLoadView);
-                                    for(DianBoRecommendModel.DataBean mdata:mDianBoRecommendModel.getData()){
-                                        mMusicRecommendAdapter = new MusicListAdapter(null);
-                                        mRecommendList = new ArrayList<>();
-                                        mLoodModelList.clear();
-                                        for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
-                                            if(mRecommend.getDetail().getType().equals("program_ondemand")){
-                                                mRecommendList .add(mRecommend);
-                                                mLoodModel = new LoodModel();
-                                                mLoodModel.setThumb(mRecommend.getThumb());
-                                                mLoodModel.setId(mRecommend.getParent_info().getParent_id());
-                                                mLoodModelList.add(mLoodModel);
-                                            }
-                                        }
-                                        if(mRecommendList.size()>0){
-                                            if(mdata.getName().equals("banner")){
-                                                mLoodView.updataData(mLoodModelList);
-                                            }else{
-                                                showPlayingList(mdata.getName(),mMusicRecommendAdapter);
-                                                mMusicRecommendAdapter.update(mRecommendList);
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                    break;
+            @Override
+            public void onResponse(String response, int id) {
+                List<DataBean> mList = new ArrayList<>();
+                DianBoModel mDianBoModel=null;
+                int count =0;
+                Gson gson = new Gson();
+                mDianBoModel = gson.fromJson(response,DianBoModel.class);
+                mViewContent.removeView(mLoadView);
+                for(DianBoModel.DataBean mData : mDianBoModel.getData()){
+                    if(mData.getName().equals("音乐")){
+                        musicalbumid=mData.getId();
+                        musicsectionid = mData.getSection_id();
+                        HandlerUtil.sendmsg(mHandler,null,0);
+                    }
+                }
             }
-            return null;
-        }
+        });
+    }
+
+    private void dianBoMusicAlbum(){
+        OkRequestEvents.dianBoMusicAlbum(mApplicatin.getAccessToken(),musicalbumid,new StringCallback(){
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                CategoryPropertyModel mCategoryPropertyModel;
+                ContentCategoryListAdapter mAdapter = new ContentCategoryListAdapter(null);
+
+                Gson gson = new Gson();
+                mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
+                mViewContent.removeView(mLoadView);
+                for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
+                    if(mdata.getName().equals("内容")){
+                        for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
+                            mCategoryPropertyList.add(mvalue);
+                        }
+                        CategoryPropertyModel.DataBean.ValuesBean mValuesBean = new CategoryPropertyModel.DataBean.ValuesBean();
+                        mValuesBean.setName("more");
+                        mCategoryPropertyList.add(mValuesBean);
+                        showContentCategoryList(mdata.getName(),mAdapter);
+                        mAdapter.update(mCategoryPropertyList);
+                    }
+                }
+                HandlerUtil.sendmsg(mHandler,null,1);
+            }
+        });
+    }
+
+    private void dianboMusic(){
+        OkRequestEvents.dianBoMusic(mApplicatin.getAccessToken(),musicsectionid,new StringCallback(){
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                DianBoRecommendModel mDianBoRecommendModel;
+                List<DianBoRecommendModel.DataBean.RecommendsBean> mRecommendList;
+                LoodModel mLoodModel;
+                List<LoodModel> mLoodModelList = new ArrayList<>();
+
+                Gson gson = new Gson();
+                mDianBoRecommendModel = gson.fromJson(response, DianBoRecommendModel.class);
+                mViewContent.removeView(mLoadView);
+                for(DianBoRecommendModel.DataBean mdata:mDianBoRecommendModel.getData()){
+                    mMusicRecommendAdapter = new MusicListAdapter(null);
+                    mRecommendList = new ArrayList<>();
+                    mLoodModelList.clear();
+                    for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
+                        if(mRecommend.getDetail().getType().equals("program_ondemand")){
+                            mRecommendList .add(mRecommend);
+                            mLoodModel = new LoodModel();
+                            mLoodModel.setThumb(mRecommend.getThumb());
+                            mLoodModel.setId(mRecommend.getParent_info().getParent_id());
+                            mLoodModelList.add(mLoodModel);
+                        }
+                    }
+                    if(mRecommendList.size()>0){
+                        if(mdata.getName().equals("banner")){
+                            mLoodView.updataData(mLoodModelList);
+                        }else{
+                            showPlayingList(mdata.getName(),mMusicRecommendAdapter);
+                            mMusicRecommendAdapter.update(mRecommendList);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public void showPlayingList(String title,MusicListAdapter adapter){
-        Log.d(TAG,"respones mRecommandMusicUrl 2");
         RecyclerView mRecyclerView;
         GridLayoutManager mGridLayoutManager;
         View mView;

@@ -32,6 +32,7 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
 import com.smartlife.R;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.model.DianBoRecommendModel;
@@ -40,6 +41,7 @@ import com.smartlife.qintin.model.LoodModel;
 import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
+import com.smartlife.utils.Constants;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -71,7 +73,6 @@ public class SelectFragment extends AttachFragment {
     private LoodView mLoodView;
     public MainActivity mActivity;
     private boolean isFirstLoad = true;
-    SelectTask mSelectNovelTask=null;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
@@ -117,17 +118,11 @@ public class SelectFragment extends AttachFragment {
         if(isVisibleToUser && isFirstLoad){
             if(mLoodView != null)
                 mLoodView.requestFocus();
-            requestData();
+            dianBoCategoryRecommend();
             isFirstLoad = false;
         }
     }
 
-    public void requestData(){
-        if (mSelectNovelTask == null || mSelectNovelTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mSelectNovelTask = new SelectTask();
-            mSelectNovelTask.execute(0, 0, 1);
-        }
-    }
 
     @Override
     public void onResume() {
@@ -250,68 +245,50 @@ public class SelectFragment extends AttachFragment {
         }
     }
 
-    class SelectTask extends AsyncTask<Integer, Integer, Integer>{
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            if (NetworkUtils.isConnectInternet(mContext)) {
-                isFromCache = false;
+    private void dianBoCategoryRecommend(){
+        OkRequestEvents.dianBoCategoryRecommend(mApplicatin.getAccessToken(),new StringCallback(){
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                Log.d(TAG,"onError");
             }
 
-            switch (integers[2]){
-                case 1:
-                    String mDianboCategoryRecommendUrl = "http://api.open.qingting.fm/v6/media/recommends/guides/section/0";
-                    OkHttpUtils
-                            .post()
-                            .url(mDianboCategoryRecommendUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
+            @Override
+            public void onResponse(String response, int id) {
+                DianBoRecommendModel mDianBoRecommendModel;
+                List<RecommendsBean> mList;
+                LoodModel mLoodModel;
+                List<LoodModel> mLoodModelList = new ArrayList<>();
 
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    DianBoRecommendModel mDianBoRecommendModel;
-                                    List<RecommendsBean> mList;
-                                    LoodModel mLoodModel;
-                                    List<LoodModel> mLoodModelList = new ArrayList<>();
+                Gson gson = new Gson();
+                mDianBoRecommendModel = gson.fromJson(response,DianBoRecommendModel.class);
+                mViewContent.removeView(mLoadView);
+                for(DianBoRecommendModel.DataBean mdata: mDianBoRecommendModel.getData()){
+                    mList = new ArrayList<>();
+                    mAdapter = new RecommendAdapter(null);
+                    mLoodModelList.clear();
+                    for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
+                        if(mRecommend.getDetail().getType().equals("program_ondemand")){
+                            mList .add(mRecommend);
 
-                                    Gson gson = new Gson();
-                                    mDianBoRecommendModel = gson.fromJson(response,DianBoRecommendModel.class);
-                                    mViewContent.removeView(mLoadView);
-                                    for(DianBoRecommendModel.DataBean mdata: mDianBoRecommendModel.getData()){
-                                        mList = new ArrayList<>();
-                                        mAdapter = new RecommendAdapter(null);
-                                        mLoodModelList.clear();
-                                        for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
-                                            if(mRecommend.getDetail().getType().equals("program_ondemand")){
-                                                mList .add(mRecommend);
+                            mLoodModel = new LoodModel();
+                            mLoodModel.setThumb(mRecommend.getThumb());
+                            mLoodModel.setId(mRecommend.getParent_info().getParent_id());
+                            mLoodModelList.add(mLoodModel);
+                        }
+                    }
+                    if(mList.size() >2){
 
-                                                mLoodModel = new LoodModel();
-                                                mLoodModel.setThumb(mRecommend.getThumb());
-                                                mLoodModel.setId(mRecommend.getParent_info().getParent_id());
-                                                mLoodModelList.add(mLoodModel);
-                                            }
-                                        }
-                                        if(mList.size() >2){
+                        if(mdata.getName().equals("banner")){
+                            mLoodView.updataData(mLoodModelList);
+                        }else{
+                            showList(mdata.getName(),mAdapter);
+                            mAdapter.update(mList);
+                        }
 
-                                            if(mdata.getName().equals("banner")){
-                                                mLoodView.updataData(mLoodModelList);
-                                            }else{
-                                                showList(mdata.getName(),mAdapter);
-                                                mAdapter.update(mList);
-                                            }
-
-                                        }
-                                    }
-                                }
-                            });
-                    break;
+                    }
+                }
             }
-            return null;
-        }
+        });
     }
 
     public void showList(String title,RecommendAdapter adapter){

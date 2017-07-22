@@ -87,6 +87,72 @@ public class OkRequestEvents {
     }
 
     /**
+     * 点播分类推荐
+     */
+    public static void dianBoCategoryRecommend(String access_token, StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/recommends/guides/section/0", callback, params, null);
+    }
+
+    /**
+     * 点播分类节目
+     */
+    public static void dianBoCategoryProgram(String access_token, StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/categories", callback, params, null);
+    }
+
+    /**
+     * 点播音乐album
+     */
+    public static void dianBoMusicAlbum(String access_token,int albumid,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/categories/"+albumid, callback, params, null);
+    }
+
+    /**
+     * 点播音乐album
+     */
+    public static void dianBoMusic(String access_token,int musicid,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/recommends/guides/section/"+musicid, callback, params, null);
+    }
+
+    /**
+     * 广播分类
+     */
+    public static void radioCategory(String access_token,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/categories/5", callback, params, null);
+    }
+
+    /**
+     * 星期广播
+     */
+    public static void radioWeek(String access_token,String week,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/recommends/nowplaying/day/" + week, callback, params, null);
+    }
+
+    /**
      * 取消绑定robot
      * */
     public static void unBindRobot(String phoneid,String robotname,StringCallback callback){

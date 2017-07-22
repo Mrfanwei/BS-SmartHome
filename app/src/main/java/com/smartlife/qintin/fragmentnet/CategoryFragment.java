@@ -25,6 +25,7 @@ import com.bilibili.magicasakura.widgets.TintImageView;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
 import com.smartlife.R;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.model.DianBoModel;
@@ -41,6 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
+
+import static com.smartlife.http.OkRequestEvents.dianBoCategoryProgram;
 
 public class CategoryFragment extends AttachFragment {
 
@@ -61,8 +64,6 @@ public class CategoryFragment extends AttachFragment {
     private boolean isFirstLoad = true;
 
     DianBoModel mDianBoModel=null;
-    SelectTask mSelectNovelTask=null;
-    TextView mtext;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
@@ -108,19 +109,8 @@ public class CategoryFragment extends AttachFragment {
         if(isVisibleToUser){
             if(mLoodView != null && isFirstLoad)
                 mLoodView.requestFocus();
-            requestData();
+            dianBoCategoryRecommend();
             isFirstLoad = false;
-        }
-    }
-
-    public void requestData(){
-        //initReloadAdapter();
-        if (mSelectNovelTask == null || mSelectNovelTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mSelectNovelTask = new SelectTask();
-            Log.d(TAG, "CategoryFragment 11");
-            mSelectNovelTask.execute(0, 0, 1);
-        } else {
-            Log.d(TAG, "CategoryFragment 22");
         }
     }
 
@@ -239,57 +229,38 @@ public class CategoryFragment extends AttachFragment {
         }
     }
 
-    class SelectTask extends AsyncTask<Integer, Integer, Integer>{
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            if (NetworkUtils.isConnectInternet(mContext)) {
-                isFromCache = false;
+    private void dianBoCategoryRecommend(){
+        OkRequestEvents.dianBoCategoryProgram(mApplicatin.getAccessToken(), new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                Log.d(TAG,"onError");
             }
 
-            switch (integers[2]){
-                case 1:
-                    String mDianboCategoryRecommendUrl = "http://api.open.qingting.fm/v6/media/categories";
-                    OkHttpUtils
-                            .post()
-                            .url(mDianboCategoryRecommendUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError14");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-
-                                    List<DataBean> mList = new ArrayList<>();
-                                    CategoryListAdapter mAdapter = new CategoryListAdapter(null);
-                                    int count =0;
-                                    Gson gson = new Gson();
-                                    mDianBoModel = gson.fromJson(response,DianBoModel.class);
-                                    mViewContent.removeView(mLoadView);
-                                    //mViewContent.removeAllViews();
-                                    for(DataBean mData : mDianBoModel.getData()){
-                                        if(count%6 == 0 && count/6!=0){
-                                            mList = new ArrayList<>();
-                                            mList.add(mData);
-                                            mAdapter = new CategoryListAdapter(null);
-                                        }else if(count%6 == 5){
-                                            mList.add(mData);
-                                            showList(mData.getName(),mAdapter);
-                                            mAdapter.update(mList);
-                                        }else{
-                                            mList.add(mData);
-                                        }
-                                        count++;
-                                    }
-                                }
-                            });
-                    break;
+            @Override
+            public void onResponse(String response, int id) {
+                List<DataBean> mList = new ArrayList<>();
+                CategoryListAdapter mAdapter = new CategoryListAdapter(null);
+                int count =0;
+                Gson gson = new Gson();
+                mDianBoModel = gson.fromJson(response,DianBoModel.class);
+                mViewContent.removeView(mLoadView);
+                //mViewContent.removeAllViews();
+                for(DataBean mData : mDianBoModel.getData()){
+                    if(count%6 == 0 && count/6!=0){
+                        mList = new ArrayList<>();
+                        mList.add(mData);
+                        mAdapter = new CategoryListAdapter(null);
+                    }else if(count%6 == 5){
+                        mList.add(mData);
+                        showList(mData.getName(),mAdapter);
+                        mAdapter.update(mList);
+                    }else{
+                        mList.add(mData);
+                    }
+                    count++;
+                }
             }
-            return null;
-        }
+        });
     }
 
     public void showList(String title,CategoryListAdapter adapter){
