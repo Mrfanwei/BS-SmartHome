@@ -52,6 +52,14 @@ public class DemoModel {
     public String getCurrentUsernName(){
         return PreferenceManager.getInstance().getCurrentUsername();
     }
+
+    public void setCurrentDestName(String robotname){
+        PreferenceManager.getInstance().setCurrentUserName(robotname);
+    }
+
+    public String getCurrentDestName(){
+        return PreferenceManager.getInstance().getCurrentUsername();
+    }
     
     public Map<String, RobotUser> getRobotList(){
         UserDao dao = new UserDao(context);

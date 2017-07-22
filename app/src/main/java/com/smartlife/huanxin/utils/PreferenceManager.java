@@ -42,6 +42,7 @@ public class PreferenceManager {
 	private static String SHARED_KEY_SETTING_BALCKLIST_SYNCED = "SHARED_KEY_SETTING_BALCKLIST_SYNCED";
 
 	private static String SHARED_KEY_CURRENTUSER_USERNAME = "SHARED_KEY_CURRENTUSER_USERNAME";
+	private static String SHARED_KEY_CURRENTUSER_DESTNAME = "SHARED_KEY_CURRENTUSER_DESTNAME";
 	private static String SHARED_KEY_CURRENTUSER_NICK = "SHARED_KEY_CURRENTUSER_NICK";
 	private static String SHARED_KEY_CURRENTUSER_AVATAR = "SHARED_KEY_CURRENTUSER_AVATAR";
 
@@ -219,6 +220,15 @@ public class PreferenceManager {
 
 	public String getCurrentUsername(){
 		return mSharedPreferences.getString(SHARED_KEY_CURRENTUSER_USERNAME, null);
+	}
+
+	public void setCurrentDestName(String username){
+		editor.putString(SHARED_KEY_CURRENTUSER_DESTNAME, username);
+		editor.apply();
+	}
+
+	public String getCurrentDestname(){
+		return mSharedPreferences.getString(SHARED_KEY_CURRENTUSER_DESTNAME, null);
 	}
 
 	public void setRestServer(String restServer){

@@ -3,6 +3,7 @@ package com.smartlife.netty.helper;
 import android.util.Log;
 
 import com.google.protobuf.MessageLite;
+import com.smartlife.huanxin.DemoHelper;
 import com.smartlife.netty.utils.Utils;
 
 import java.io.IOException;
@@ -18,20 +19,16 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
     public static ChannelHandlerContext _gateClientConnection;
 
     private static final String TAG = "SmartLife/ClientHan";
-    String _userId = "";
-    boolean _verify = false;
-    private static int count = 0;
-
-    public static AtomicLong increased = new AtomicLong(1);
+    static String username = "";
+    static String destname = "";
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws IOException {
         _gateClientConnection = ctx;
-        String passwd = "123";
-//        _userId = Long.toString(increased.getAndIncrement());
-        _userId = "fffw";
-        sendCRegister(ctx, _userId, passwd);
-        sendCLogin(ctx, _userId, passwd);
+        username = DemoHelper.getInstance().getCurrentUsernName();
+        destname = DemoHelper.getInstance().getCurrentDestName();
+        sendCRegister(ctx, username, username);
+        sendCLogin(ctx, username, username);
     }
 
     void sendCRegister(ChannelHandlerContext ctx, String userid, String passwd) {
@@ -41,7 +38,6 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
 
         ByteBuf byteBuf = Utils.pack2Client(cb.build());
         ctx.writeAndFlush(byteBuf);
-        Log.d(TAG,"send CRegister userid:{}"+_userId);
     }
 
     void sendCLogin(ChannelHandlerContext ctx, String userid, String passwd) {
@@ -53,7 +49,6 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
 
         ByteBuf byteBuf = Utils.pack2Client(loginInfo.build());
         ctx.writeAndFlush(byteBuf);
-        Log.d(TAG,"send CLogin userid:{}"+ _userId);
     }
 
     @Override
@@ -66,7 +61,6 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
             switch (code) {
                 case Constants.VERYFY_PASSED:
                     Log.d(TAG,"VERYFY_PASSED = "+ desc);
-                    _verify = true;
                     break;
                 case Constants.ACCOUNT_INEXIST:
                     Log.d(TAG,"ACCOUNT_INEXIST = "+desc);
@@ -90,7 +84,8 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
             String content = cp.getContent();
             if(content.contains("collectionLike")){
                 Log.d(TAG,"collectionLike");
-                sendMessage("collectionliked");
+                /******此次异常会导致后台异常****/
+                //sendMessage("collectionliked");
             }else{
                 Log.d(TAG,"content="+content);
             }
@@ -101,8 +96,8 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
 
         Chat.CPrivateChat.Builder cp = Chat.CPrivateChat.newBuilder();
         cp.setContent(command);
-        cp.setSelf("fffw");
-        cp.setDest("fffw");
+        cp.setSelf(username);
+        cp.setDest(destname);
 
         ByteBuf byteBuf = Utils.pack2Client(cp.build());
         _gateClientConnection.writeAndFlush(byteBuf);

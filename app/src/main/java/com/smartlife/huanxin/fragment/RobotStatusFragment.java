@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMMessage;
+import com.iflytek.cloud.thirdparty.D;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.huanxin.DemoHelper;
@@ -251,6 +252,7 @@ public class RobotStatusFragment extends DialogFragment{
                 return;
             }
 
+            DemoHelper.getInstance().setCurrentDestName(list_robots.get(position).getRname());
             if (mCallTask == null || mCallTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
                 mCallTask = new RobotTask();
                 mCallTask.execute(list_robots.get(position).getRname(),null, "3");
@@ -354,7 +356,7 @@ public class RobotStatusFragment extends DialogFragment{
         protected String doInBackground(String... strings) {
             switch (strings[2]){
                 case "3":
-                    //NettyManager.getInstance(getActivity().getApplicationContext()).startSocket();
+                    //NettyManager.getInstance(getActivity()).startSocket();
                     tovideo("chat",strings[0]);
                     break;
             }

@@ -58,10 +58,10 @@ public class NetUtil {
 					}
 				});
 
-		startConnection(b,1);
+		startConnection(b);
 	}
 
-	private static void startConnection(Bootstrap b, int index) {
+	private static void startConnection(Bootstrap b) {
 		b.connect(HOST, PORT)
 				.addListener(new ChannelFutureListener() {
 					@Override
@@ -71,15 +71,12 @@ public class NetUtil {
 							//init registry
 							ParseRegistryMap.initRegistry();
 							Log.d(TAG,"success");
-						} else {
-							Log.d(TAG,"failed");
 						}
 					}
 				});
 	}
 
 	public static void sendCommand(String command){
-		Log.d(TAG,"sendCommand");
 		ClientHandler.sendMessage(command);
 	}
 }

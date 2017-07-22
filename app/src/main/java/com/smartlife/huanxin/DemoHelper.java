@@ -101,6 +101,8 @@ public class DemoHelper {
 
 	private String username;
 
+    private String destname;
+
     private Context appContext;
 
     private CallReceiver callReceiver;
@@ -940,6 +942,22 @@ public class DemoHelper {
     		username = demoModel.getCurrentUsernName();
     	}
     	return username;
+    }
+
+    /**
+     * set current username
+     * @param destname
+     */
+    public void setCurrentDestName(String destname){
+        this.destname = destname;
+    }
+
+    /**
+     * get current user's id
+     */
+    public String getCurrentDestName(){
+
+        return destname;
     }
 
 	public void setRobotList(Map<String, RobotUser> robotList) {
