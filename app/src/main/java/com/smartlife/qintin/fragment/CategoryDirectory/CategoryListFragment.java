@@ -21,6 +21,7 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.R;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
@@ -45,7 +46,6 @@ public class CategoryListFragment extends AttachFragment {
     private RecyclerView recyclerView;
     private SwipeRefreshLayout mSpList;
     private View view;
-    private ListTask mListTask=null;
     private boolean isFromCache = true;
     public CategoryDirectoryActivity mActivity;
     private int width = 160, height = 160;
@@ -84,16 +84,9 @@ public class CategoryListFragment extends AttachFragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if(isVisibleToUser && isFirstLoad){
-            requestData(currentpage);
+            dianBoCategoryList(currentpage);
             isFirstLoad = false;
         }
-    }
-
-    public void requestData(int currentpage){
-            if (mListTask == null || mListTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-                mListTask = new ListTask();
-                mListTask.execute(currentpage, 0, 1);
-            }
     }
 
     private void setList() {
@@ -104,7 +97,7 @@ public class CategoryListFragment extends AttachFragment {
                 Log.d(TAG,"onLoadMore");
                 if(!noMoreData){
                     currentpage++;
-                    requestData(currentpage);
+                    dianBoCategoryList(currentpage);
                 }
                 mSpList.setLoadMore(false);
             }
@@ -224,55 +217,36 @@ public class CategoryListFragment extends AttachFragment {
         }
     }
 
-    class ListTask extends AsyncTask<Integer,Integer,Integer>{
+    private void dianBoCategoryList(int page){
+        OkRequestEvents.dianBoCategoryList(mApplicatin.getAccessToken(), mDataId, mValueId, page, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
 
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            if (NetworkUtils.isConnectInternet(mContext)) {
-                isFromCache = false;
             }
 
-            switch (integers[2]){
-                case 1:
-                    String mCategoryAllUrl = "http://api.open.qingting.fm/v6/media/categories/" + mDataId +"/channels/order/0/attr/"+mValueId+"/curpage/"+integers[0]+"/pagesize/10";
-                    OkHttpUtils
-                            .post()
-                            .url(mCategoryAllUrl)
-                            .addParams("access_token", mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback(){
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
+            @Override
+            public void onResponse(String response, int id) {
+                Log.d(TAG,"response = "+response);
 
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    Log.d(TAG,"response = "+response);
+                Gson gson = new Gson();
+                mCategoryAllRadioModel = gson.fromJson(response, CategoryAllRadioModel.class);
+                totalAlbumCount = mCategoryAllRadioModel.getTotal();
+                Log.d(TAG,"totalAlbumCount ="+totalAlbumCount);
 
-                                    Gson gson = new Gson();
-                                    mCategoryAllRadioModel = gson.fromJson(response, CategoryAllRadioModel.class);
-                                    totalAlbumCount = mCategoryAllRadioModel.getTotal();
-                                    Log.d(TAG,"totalAlbumCount ="+totalAlbumCount);
-
-                                    if(totalAlbumCount>0){
-                                        for(DataBean mdata:mCategoryAllRadioModel.getData()){
-                                            Log.d(TAG,"mCategoryPropertyModel dataName = "+ mdata.getTitle());
-                                            adapterList.add(mdata);
-                                        }
-                                    }else{
-                                        noMoreData = true;
-                                    }
-                                    recyclerView.setAdapter(mAdapter);
-                                    recyclerView.setHasFixedSize(true);
-                                    recyclerView.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.VERTICAL_LIST));
-                                    mAdapter.updateDataSet(adapterList);
-                                }
-                            });
-                    break;
+                if(totalAlbumCount>0){
+                    for(DataBean mdata:mCategoryAllRadioModel.getData()){
+                        Log.d(TAG,"mCategoryPropertyModel dataName = "+ mdata.getTitle());
+                        adapterList.add(mdata);
+                    }
+                }else{
+                    noMoreData = true;
+                }
+                recyclerView.setAdapter(mAdapter);
+                recyclerView.setHasFixedSize(true);
+                recyclerView.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.VERTICAL_LIST));
+                mAdapter.updateDataSet(adapterList);
             }
-            return null;
-        }
+        });
     }
 }
 

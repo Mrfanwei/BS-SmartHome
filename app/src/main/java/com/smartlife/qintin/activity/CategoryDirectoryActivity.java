@@ -13,6 +13,7 @@ import android.view.WindowManager;
 import com.google.gson.Gson;
 import com.smartlife.MainApplication;
 import com.smartlife.R;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.adapter.CategoryDirectoryAdapter;
 import com.smartlife.qintin.fragment.CategoryDirectory.CategoryListFragment;
 import com.smartlife.qintin.model.CategoryPropertyModel;
@@ -34,7 +35,6 @@ public class CategoryDirectoryActivity extends BaseActivity{
     private boolean isFromCache = true;
     CategoryPropertyModel mCategoryPropertyModel = null;
     MainApplication mApplicatin=null;
-    CategoryDirectoryTask mCategoryDirectoryTask=null;
     ArrayList<CategoryPropertyModel.DataBean.ValuesBean> mValues;
     ArrayList<CategoryListFragment> mListFragment;
     TabLayout tabLayout;
@@ -78,7 +78,7 @@ public class CategoryDirectoryActivity extends BaseActivity{
                 Log.d(TAG,"tabLayout onTabReselected ="+tab.getPosition());
             }
         });
-        requestData();
+        dianBoCategoryDirectory();
     }
 
     private void setupToolbar() {
@@ -97,77 +97,51 @@ public class CategoryDirectoryActivity extends BaseActivity{
         toolbar.setSubtitle(dbcategoryname);
     }
 
-    public void requestData(){
-        if (mCategoryDirectoryTask == null || mCategoryDirectoryTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mCategoryDirectoryTask = new CategoryDirectoryTask();
-            mCategoryDirectoryTask.execute(0, 0, 1);
-        }
-    }
-
-    class CategoryDirectoryTask extends AsyncTask<Integer,Integer,Integer> {
-
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            if (NetworkUtils.isConnectInternet(CategoryDirectoryActivity.this)) {
-                isFromCache = false;
+    private void dianBoCategoryDirectory(){
+        OkRequestEvents.dianBoCategoryDirectory(mApplicatin.getAccessToken(), dbcategoryid, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                Log.d(TAG,"error");
             }
 
-            switch (integers[2]){
-                case 1:
-                    String mDianboCategoryRecommendUrl = "http://api.open.qingting.fm/v6/media/categories/"+dbcategoryid;
-                    OkHttpUtils
-                            .post()
-                            .url(mDianboCategoryRecommendUrl)
-                            .addParams("access_token", mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback(){
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"error");
-                                }
+            @Override
+            public void onResponse(String response, int id) {
+                int mStatus = 0;
+                Log.d(TAG,"responseffff="+response);
+                mValues = new ArrayList<>();
+                List<String> mValueName= new ArrayList<>();
+                int i=0,index=0;
+                Gson gson = new Gson();
+                mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
+                for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
+                    Log.d(TAG,"onResponse name ="+mdata.getName());
+                    if(mStatus == 0){
+                        for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
+                            tabLayout.addTab(tabLayout.newTab().setText(mvalue.getName()));
+                            CategoryListFragment mList = new CategoryListFragment();
+                            Bundle args = new Bundle();
+                            args.putInt("dataid",mdata.getId());
+                            args.putInt("valueid",mvalue.getId());
+                            args.putString("tabname",mvalue.getName());
+                            mList.setArguments(args);
+                            mListFragment.add(mList);
+                            mValueName.add(mvalue.getName());
+                            mValues.add(mvalue);
+                            if(mvalue.getName().equals(dbcategoryname)){
+                                index =i;
+                            }
+                            i++;
+                        }
 
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    int mStatus = 0;
-                                    Log.d(TAG,"responseffff="+response);
-                                    mValues = new ArrayList<>();
-                                    List<String> mValueName= new ArrayList<>();
-                                    int i=0,index=0;
-                                    Gson gson = new Gson();
-                                    mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
-                                    for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
-                                        Log.d(TAG,"onResponse name ="+mdata.getName());
-                                        if(mStatus == 0){
-                                            for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
-                                                tabLayout.addTab(tabLayout.newTab().setText(mvalue.getName()));
-                                                CategoryListFragment mList = new CategoryListFragment();
-                                                Bundle args = new Bundle();
-                                                args.putInt("dataid",mdata.getId());
-                                                args.putInt("valueid",mvalue.getId());
-                                                args.putString("tabname",mvalue.getName());
-                                                mList.setArguments(args);
-                                                mListFragment.add(mList);
-                                                mValueName.add(mvalue.getName());
-                                                mValues.add(mvalue);
-                                                if(mvalue.getName().equals(dbcategoryname)){
-                                                    index =i;
-                                                }
-                                                i++;
-                                            }
-
-                                            CategoryDirectoryAdapter mCategoryDirectoryAdapter = new CategoryDirectoryAdapter(getSupportFragmentManager(),mListFragment,mValueName);
-                                            mViewPager.setAdapter(mCategoryDirectoryAdapter);
-                                            mViewPager.setOffscreenPageLimit(mListFragment.size());
-                                            mViewPager.setCurrentItem(index);
-                                            tabLayout.setupWithViewPager(mViewPager);
-                                            mStatus =1;
-                                        }
-                                    }
-                                }
-                            });
-                    break;
+                        CategoryDirectoryAdapter mCategoryDirectoryAdapter = new CategoryDirectoryAdapter(getSupportFragmentManager(),mListFragment,mValueName);
+                        mViewPager.setAdapter(mCategoryDirectoryAdapter);
+                        mViewPager.setOffscreenPageLimit(mListFragment.size());
+                        mViewPager.setCurrentItem(index);
+                        tabLayout.setupWithViewPager(mViewPager);
+                        mStatus =1;
+                    }
+                }
             }
-            return null;
-        }
+        });
     }
 }

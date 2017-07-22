@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -49,6 +50,7 @@ import com.google.gson.Gson;
 import com.nineoldandroids.view.ViewHelper;
 import com.smartlife.MainApplication;
 import com.smartlife.R;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.dialog.LoadAllDownInfos;
 import com.smartlife.qintin.fragment.MoreFragment;
 import com.smartlife.qintin.fragment.NetMoreFragment;
@@ -104,7 +106,6 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
     private ImageView collectView;
     private FrameLayout favLayout;
     private LinearLayout share;
-    private PlayListTask mLoadListTask;
     private PlayListTask mCollectList;
     private ObservableRecyclerView recyclerView;
     private boolean d = true;
@@ -274,11 +275,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             tryAgain.setVisibility(View.GONE);
             loadView = LayoutInflater.from(this).inflate(R.layout.loading, loadFrameLayout, false);
             loadFrameLayout.addView(loadView);
-
-            if (mLoadListTask == null || mLoadListTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-                mLoadListTask = new PlayListTask();
-                mLoadListTask.execute(currentpage, itemcount, 2);
-            }
+            dianBoPlayList(currentpage,itemcount);
         } else {
             tryAgain.setVisibility(View.VISIBLE);
 
@@ -574,6 +571,62 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
         }
     }
 
+    Handler myHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 1:
+                    loadFrameLayout.removeAllViews();
+                    recyclerView.setVisibility(View.VISIBLE);
+                    break;
+            }
+        }
+    };
+
+    private void dianBoPlayList(int page,int count){
+        OkRequestEvents.dianBoPlayList(mApplicatin.getAccessToken(), playParentId, page, count, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                Log.d(TAG,"response PlayListTask="+response);
+                int position=0;
+                itemInfos.clear();
+                Gson gson = new Gson();
+                itemlist = new long[itemcount];
+                mDianBoProgramModel = gson.fromJson(response,DianBoProgram.class);
+                mHandler.post(showInfo);
+                for(DianBoProgram.DataBean mdata:mDianBoProgramModel.getData()){
+                    mList.add(mdata);
+                }
+                for(DianBoProgram.DataBean mData:mList){
+                    MusicInfo musicInfo = new MusicInfo();
+                    musicInfo.songId = mData.getId();
+                    musicInfo.musicName = mData.getTitle();
+                    musicInfo.artist = mData.getDescription();
+                    musicInfo.islocal = false;
+                    musicInfo.albumName = playParentName;
+                    musicInfo.albumId = playParentId;
+                    musicInfo.artistId = mData.getId();
+                    musicInfo.lrc = "1";
+                    musicInfo.albumData = "1";
+                    musicInfo.filepath = mData.getMediainfo().getBitrates_url().get(0).getFile_path();
+                    musicInfo.url = "http://"+mDomainUrl+"/"+mData.getMediainfo().getBitrates_url().get(0).getFile_path()+"/"+mData.getId()+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
+                    itemlist[position] = mData.getId();
+                    position++;
+                    itemInfos.put((long)mData.getId(),musicInfo);
+                    adapterList.add(musicInfo);
+                }
+                if(adapterList.size()>0)
+                    mAdapter.updateDataSet(adapterList);
+                myHandler.sendEmptyMessage(1);
+            }
+        });
+    }
 
     class PlayListTask extends AsyncTask<Integer,Integer,Integer> {
 
@@ -599,69 +652,9 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
 
                     mCollected = true;
                     break;
-                case 2:
-                    result =2;
-                    String mDianBoRadioProUrl = "http://api.open.qingting.fm/wapi/channelondemands/" + playParentId +"/programs/curpage/"+ integers[0] +"/pagesize/"+integers[1];
-                    OkHttpUtils
-                            .post()
-                            .url(mDianBoRadioProUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    Log.d(TAG,"response PlayListTask="+response);
-                                    int position=0;
-                                    itemInfos.clear();
-                                    Gson gson = new Gson();
-                                    itemlist = new long[itemcount];
-                                    mDianBoProgramModel = gson.fromJson(response,DianBoProgram.class);
-                                    mHandler.post(showInfo);
-                                    for(DianBoProgram.DataBean mdata:mDianBoProgramModel.getData()){
-                                        mList.add(mdata);
-                                    }
-                                    for(DianBoProgram.DataBean mData:mList){
-                                        MusicInfo musicInfo = new MusicInfo();
-                                        musicInfo.songId = mData.getId();
-                                        musicInfo.musicName = mData.getTitle();
-                                        musicInfo.artist = mData.getDescription();
-                                        musicInfo.islocal = false;
-                                        musicInfo.albumName = playParentName;
-                                        musicInfo.albumId = playParentId;
-                                        musicInfo.artistId = mData.getId();
-                                        musicInfo.lrc = "1";
-                                        musicInfo.albumData = "1";
-                                        musicInfo.filepath = mData.getMediainfo().getBitrates_url().get(0).getFile_path();
-                                        musicInfo.url = "http://"+mDomainUrl+"/"+mData.getMediainfo().getBitrates_url().get(0).getFile_path()+"/"+mData.getId()+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
-                                        itemlist[position] = mData.getId();
-                                        position++;
-                                        itemInfos.put((long)mData.getId(),musicInfo);
-                                        adapterList.add(musicInfo);
-                                    }
-                                    if(adapterList.size()>0)
-                                        mAdapter.updateDataSet(adapterList);
-                                }
-                            });
-                    break;
             }
             return result;
         }
 
-        @Override
-        protected void onPostExecute(Integer result) {
-            super.onPostExecute(result);
-            if(result == 1){
-
-            }else if(result == 2){
-                loadFrameLayout.removeAllViews();
-                recyclerView.setVisibility(View.VISIBLE);
-            }
-
-        }
     }
 }

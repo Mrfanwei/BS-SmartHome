@@ -109,6 +109,28 @@ public class OkRequestEvents {
     }
 
     /**
+     * 点播分类节目
+     */
+    public static void dianBoCategoryDirectory(String access_token,int id ,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/categories/"+id, callback, params, null);
+    }
+
+    /**
+     * 点播分类节目list
+     */
+    public static void dianBoCategoryList(String access_token,int dataid,int valueid,int page ,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/v6/media/categories/" + dataid +"/channels/order/0/attr/"+valueid+"/curpage/"+page+"/pagesize/10", callback, params, null);
+    }
+
+    /**
      * 点播音乐album
      */
     public static void dianBoMusicAlbum(String access_token,int albumid,StringCallback callback) {
@@ -128,6 +150,17 @@ public class OkRequestEvents {
         params.put("access_token", access_token);
 
         postImpl("http://api.open.qingting.fm/v6/media/recommends/guides/section/"+musicid, callback, params, null);
+    }
+
+    /**
+     * 点播音乐play list
+     */
+    public static void dianBoPlayList(String access_token,int parentid,int page,int count,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/wapi/channelondemands/" + parentid +"/programs/curpage/"+ page +"/pagesize/"+count, callback, params, null);
     }
 
     /**
