@@ -243,7 +243,6 @@ public class RobotStatusFragment extends DialogFragment{
         @Override
         public void onItemClick(AdapterView<?> parent, final View view,
                                 int position, long id) {
-            //NettyManager.getInstance(getActivity().getApplicationContext()).startSocket();
             if (!list_robots.get(position).isOnline()) {
                 ToastUtil.showtomain(getActivity(), "机器人处于离线状态");
                 return;
@@ -252,7 +251,9 @@ public class RobotStatusFragment extends DialogFragment{
                 return;
             }
 
+
             DemoHelper.getInstance().setCurrentDestName(list_robots.get(position).getRname());
+            NettyManager.getInstance(getActivity().getApplicationContext()).startSocket();
             if (mCallTask == null || mCallTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
                 mCallTask = new RobotTask();
                 mCallTask.execute(list_robots.get(position).getRname(),null, "3");

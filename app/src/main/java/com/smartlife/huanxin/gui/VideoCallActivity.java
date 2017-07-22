@@ -547,6 +547,7 @@ public class VideoCallActivity extends CallActivity implements OnClickListener,V
 
         case R.id.btn_answer_call: // answer the call
             EMLog.d(TAG, "btn_answer_call clicked");
+            NettyManager.getInstance(getApplicationContext()).startSocket();
             answerBtn.setEnabled(false);
             openSpeakerOn();
             if (ringtone != null)
@@ -718,7 +719,6 @@ public class VideoCallActivity extends CallActivity implements OnClickListener,V
                 e.printStackTrace();
             }
         }
-        Log.d(TAG,"");
     }
 
 }
