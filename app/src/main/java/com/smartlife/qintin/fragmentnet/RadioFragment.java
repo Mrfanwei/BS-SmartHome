@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,10 +38,8 @@ import com.smartlife.qintin.model.ZhiBoCategoryModel;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean.ValuesBean;
 import com.smartlife.qintin.model.ZhiBoRadioList;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
@@ -315,7 +312,7 @@ public class RadioFragment extends AttachFragment {
     }
 
     private void radioCategory(){
-        OkRequestEvents.radioCategory(mApplicatin.getAccessToken(), new StringCallback() {
+        OkRequestEvents.radioCategory(mApplication.getAccessToken(), new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
 
@@ -350,7 +347,7 @@ public class RadioFragment extends AttachFragment {
         String mweek;
         final Calendar c = Calendar.getInstance();
         mweek = String.valueOf(c.get(Calendar.DAY_OF_WEEK));
-        OkRequestEvents.radioWeek(mApplicatin.getAccessToken(), mweek, new StringCallback() {
+        OkRequestEvents.radioWeek(mApplication.getAccessToken(), mweek, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
 

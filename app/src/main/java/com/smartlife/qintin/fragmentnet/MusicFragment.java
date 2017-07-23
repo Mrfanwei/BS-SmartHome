@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -44,11 +43,9 @@ import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoRecommendModel;
 import com.smartlife.qintin.model.LoodModel;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
 import com.smartlife.utils.HandlerUtil;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
@@ -317,7 +314,7 @@ public class MusicFragment extends AttachFragment {
     };
 
     private void dianBoCategoryProgram(){
-        OkRequestEvents.dianBoCategoryProgram(mApplicatin.getAccessToken(), new StringCallback(){
+        OkRequestEvents.dianBoCategoryProgram(mApplication.getAccessToken(), new StringCallback(){
             @Override
             public void onError(Call call, Exception e, int id) {
 
@@ -343,7 +340,7 @@ public class MusicFragment extends AttachFragment {
     }
 
     private void dianBoMusicAlbum(){
-        OkRequestEvents.dianBoMusicAlbum(mApplicatin.getAccessToken(),musicalbumid,new StringCallback(){
+        OkRequestEvents.dianBoMusicAlbum(mApplication.getAccessToken(),musicalbumid,new StringCallback(){
             @Override
             public void onError(Call call, Exception e, int id) {
 
@@ -375,7 +372,7 @@ public class MusicFragment extends AttachFragment {
     }
 
     private void dianboMusic(){
-        OkRequestEvents.dianBoMusic(mApplicatin.getAccessToken(),musicsectionid,new StringCallback(){
+        OkRequestEvents.dianBoMusic(mApplication.getAccessToken(),musicsectionid,new StringCallback(){
             @Override
             public void onError(Call call, Exception e, int id) {
 

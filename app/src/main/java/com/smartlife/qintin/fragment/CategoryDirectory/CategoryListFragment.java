@@ -1,10 +1,8 @@
 package com.smartlife.qintin.fragment.CategoryDirectory;
 
-import android.content.Intent;
+import android.content.Context;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,16 +20,12 @@ import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
-import com.smartlife.qintin.activity.CategoryDirectoryActivity;
-import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
-import com.smartlife.qintin.handler.HandlerUtil;
 import com.smartlife.qintin.model.CategoryAllRadioModel;
 import com.smartlife.qintin.model.CategoryAllRadioModel.DataBean;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.widget.DividerItemDecoration;
 import com.smartlife.qintin.widget.SwipeRefreshLayout;
-import com.zhy.http.okhttp.OkHttpUtils;
+import com.smartlife.utils.ToastUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
@@ -39,106 +33,94 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class CategoryListFragment extends AttachFragment {
-    private String TAG = "SmartLifee/ListFr";
-    private Handler mHandler;
+public class CategoryListFragment extends AttachFragment implements SwipeRefreshLayout.OnPushLoadMoreListener, SwipeRefreshLayout.OnPullRefreshListener {
+
+    private static final String TAG = "SmartLifee/ListFr";
+    private static final String DATA_ID = "data_id";
+    private static final String VALUE_ID = "value_id";
+    private static final String TAB_NAME = "tab_name";
+
     private PlaylistDetailAdapter mAdapter;
-    private RecyclerView recyclerView;
     private SwipeRefreshLayout mSpList;
-    private View view;
     private boolean isFromCache = true;
-    public CategoryDirectoryActivity mActivity;
     private int width = 160, height = 160;
     private int mDataId;
     private int mValueId;
     private boolean isFirstLoad = true;
-    private List<DataBean> adapterList;
+    private List<DataBean> adapterList = new ArrayList<>();
     private CategoryAllRadioModel mCategoryAllRadioModel;
-    private int totalAlbumCount =0;
+    private int totalAlbumCount = 0;
     private int currentpage;
     private boolean noMoreData;
+    private OnFragmentInteractionListener mListener;
+
+    public interface OnFragmentInteractionListener {
+        void startPlaylistActivity(CategoryAllRadioModel.DataBean bean);
+    }
+
+    public static CategoryListFragment newInstance(int dataId, int valueId, String tabName) {
+        CategoryListFragment fragment = new CategoryListFragment();
+        Bundle args = new Bundle();
+        args.putInt(DATA_ID, dataId);
+        args.putInt(VALUE_ID, valueId);
+        args.putString(TAB_NAME, tabName);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mValueId = getArguments().getInt("valueid");
-        mDataId = getArguments().getInt("dataid");
-        mHandler = HandlerUtil.getInstance(getActivity());
-        adapterList = new ArrayList<>();
-        mAdapter = new PlaylistDetailAdapter();
+        if (getArguments() != null) {
+            mValueId = getArguments().getInt(VALUE_ID);
+            mDataId = getArguments().getInt(DATA_ID);
+        }
         noMoreData = false;
-        currentpage =1;
+        currentpage = 1;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        Log.d(TAG,"onCreateView");
-        mActivity = (CategoryDirectoryActivity)getActivity();
-        view = inflater.inflate(R.layout.fragment_list, container, false);
-        setList();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_list, container, false);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.list_recyclerview);
+        recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.addItemDecoration(new DividerItemDecoration(mApplication, DividerItemDecoration.VERTICAL_LIST));
+        mAdapter = new PlaylistDetailAdapter(adapterList);
+        recyclerView.setAdapter(mAdapter);
+        mSpList = (SwipeRefreshLayout) view.findViewById(R.id.sr_push);
+        mSpList.setOnPushLoadMoreListener(this);
+        mSpList.setOnPullRefreshListener(this);
         return view;
     }
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser && isFirstLoad){
+        if (isVisibleToUser && isFirstLoad) {
             dianBoCategoryList(currentpage);
             isFirstLoad = false;
         }
     }
 
-    private void setList() {
-        mSpList = (SwipeRefreshLayout)view.findViewById(R.id.sr_push);
-        mSpList.setOnPushLoadMoreListener(new SwipeRefreshLayout.OnPushLoadMoreListener() {
-            @Override
-            public void onLoadMore() {
-                Log.d(TAG,"onLoadMore");
-                if(!noMoreData){
-                    currentpage++;
-                    dianBoCategoryList(currentpage);
-                }
-                mSpList.setLoadMore(false);
-            }
-
-            @Override
-            public void onPushDistance(int distance) {
-                Log.d(TAG,"onPushDistance");
-            }
-
-            @Override
-            public void onPushEnable(boolean enable) {
-                Log.d(TAG,"onPushEnable");
-            }
-        });
-
-        mSpList.setOnPullRefreshListener(new SwipeRefreshLayout.OnPullRefreshListener() {
-            @Override
-            public void onRefresh() {
-                Log.d(TAG,"onRefresh");
-                mSpList.setRefreshing(false);
-            }
-
-            @Override
-            public void onPullDistance(int distance) {
-                Log.d(TAG,"onPullDistance");
-            }
-
-            @Override
-            public void onPullEnable(boolean enable) {
-                Log.d(TAG,"onPullEnable");
-            }
-        });
-        recyclerView = (RecyclerView)view.findViewById(R.id.list_recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-        recyclerView.setHasFixedSize(true);
-    }
-
     class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final static int FIRST_ITEM = 0;
         final static int ITEM = 1;
-        private List<DataBean>  arraylist;
+        private List<DataBean> arraylist;
+
+        public PlaylistDetailAdapter(List<DataBean> arraylist) {
+            this.arraylist = arraylist;
+        }
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
@@ -170,20 +152,8 @@ public class CategoryListFragment extends AttachFragment {
                 ((ItemViewHolder) itemHolder).title.setText(localItem.getTitle());
                 ((ItemViewHolder) itemHolder).subtitle.setText(localItem.getDescription());
 
-                ((ItemViewHolder) itemHolder).itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Intent intent = new Intent(mActivity, PlaylistActivity.class);
-                        intent.putExtra("itemcount",localItem.getProgram_count());
-                        intent.putExtra("playlistid", "1");
-                        intent.putExtra("recommendsTitle",localItem.getTitle());
-                        intent.putExtra("parent_id",localItem.getId());
-                        intent.putExtra("thumb",localItem.getThumbs().getSmall_thumb());
-                        intent.putExtra("detailTitle",localItem.getTitle());
-                        intent.putExtra("detailDuration",111);
-                        intent.putExtra("domainUrl",mApplicatin.getDomainUrl());
-                        getActivity().startActivity(intent);
-                    }
+                ((ItemViewHolder) itemHolder).itemView.setOnClickListener(view -> {
+                    mListener.startPlaylistActivity(localItem);
                 });
             }
         }
@@ -193,12 +163,7 @@ public class CategoryListFragment extends AttachFragment {
             return arraylist == null ? 0 : arraylist.size();
         }
 
-        public void updateDataSet(List<DataBean> arraylist) {
-            this.arraylist = arraylist;
-            this.notifyDataSetChanged();
-        }
-
-        public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        public class ItemViewHolder extends RecyclerView.ViewHolder {
             protected TextView title, subtitle;
             private SimpleDraweeView art;
 
@@ -207,46 +172,94 @@ public class CategoryListFragment extends AttachFragment {
                 art = (SimpleDraweeView) itemView.findViewById(R.id.viewpager_list_img);
                 this.title = (TextView) view.findViewById(R.id.viewpager_list_toptext);
                 this.subtitle = (TextView) view.findViewById(R.id.viewpager_list_bottom_text);
-                view.setOnClickListener(this);
-            }
-
-            @Override
-            public void onClick(View v) {
-
             }
         }
     }
 
-    private void dianBoCategoryList(int page){
-        OkRequestEvents.dianBoCategoryList(mApplicatin.getAccessToken(), mDataId, mValueId, page, new StringCallback() {
+    private void dianBoCategoryList(int page) {
+        OkRequestEvents.dianBoCategoryList(mApplication.getAccessToken(), mDataId, mValueId, page, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
-
+                currentpage--;
+                if (page == 1) {
+                    mSpList.setRefreshing(false);
+                } else {
+                    mSpList.setLoadMore(false);
+                }
+                ToastUtil.showShort("网络异常");
             }
 
             @Override
             public void onResponse(String response, int id) {
-                Log.d(TAG,"response = "+response);
+                Log.d(TAG, "response = " + response);
 
                 Gson gson = new Gson();
                 mCategoryAllRadioModel = gson.fromJson(response, CategoryAllRadioModel.class);
                 totalAlbumCount = mCategoryAllRadioModel.getTotal();
-                Log.d(TAG,"totalAlbumCount ="+totalAlbumCount);
+                Log.d(TAG, "totalAlbumCount =" + totalAlbumCount);
 
-                if(totalAlbumCount>0){
-                    for(DataBean mdata:mCategoryAllRadioModel.getData()){
-                        Log.d(TAG,"mCategoryPropertyModel dataName = "+ mdata.getTitle());
+                if (totalAlbumCount > 0) {
+                    if (page == 1) {
+                        adapterList.clear();
+                    }
+                    for (DataBean mdata : mCategoryAllRadioModel.getData()) {
+                        Log.d(TAG, "mCategoryPropertyModel dataName = " + mdata.getTitle());
                         adapterList.add(mdata);
                     }
-                }else{
+                } else {
                     noMoreData = true;
+                    ToastUtil.showShort("没有更多数据了");
                 }
-                recyclerView.setAdapter(mAdapter);
-                recyclerView.setHasFixedSize(true);
-                recyclerView.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.VERTICAL_LIST));
-                mAdapter.updateDataSet(adapterList);
+                mAdapter.notifyDataSetChanged();
+                if (page == 1) {
+                    mSpList.setRefreshing(false);
+                } else {
+                    mSpList.setLoadMore(false);
+                }
             }
         });
+    }
+
+    @Override
+    public void onLoadMore() {
+        Log.d(TAG, "onLoadMore");
+        if (!noMoreData) {
+            currentpage++;
+            dianBoCategoryList(currentpage);
+        }
+    }
+
+    @Override
+    public void onPushDistance(int distance) {
+        Log.d(TAG, "onPushDistance");
+    }
+
+    @Override
+    public void onPushEnable(boolean enable) {
+        Log.d(TAG, "onPushEnable");
+    }
+
+    @Override
+    public void onRefresh() {
+        Log.d(TAG, "onRefresh");
+        currentpage = 1;
+        dianBoCategoryList(currentpage);
+    }
+
+    @Override
+    public void onPullDistance(int distance) {
+        Log.d(TAG, "onPullDistance");
+    }
+
+    @Override
+    public void onPullEnable(boolean enable) {
+        Log.d(TAG, "onPullEnable");
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 }
 

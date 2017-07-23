@@ -3,7 +3,6 @@ package com.smartlife.qintin.fragmentnet;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -30,10 +29,8 @@ import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoModel.DataBean;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
@@ -42,8 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
-
-import static com.smartlife.http.OkRequestEvents.dianBoCategoryProgram;
 
 public class CategoryFragment extends AttachFragment {
 
@@ -230,7 +225,7 @@ public class CategoryFragment extends AttachFragment {
     }
 
     private void dianBoCategoryRecommend(){
-        OkRequestEvents.dianBoCategoryProgram(mApplicatin.getAccessToken(), new StringCallback() {
+        OkRequestEvents.dianBoCategoryProgram(mApplication.getAccessToken(), new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
                 Log.d(TAG,"onError");

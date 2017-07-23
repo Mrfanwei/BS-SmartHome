@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -38,11 +37,8 @@ import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.model.DianBoRecommendModel;
 import com.smartlife.qintin.model.DianBoRecommendModel.DataBean.RecommendsBean;
 import com.smartlife.qintin.model.LoodModel;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
-import com.smartlife.utils.Constants;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
@@ -246,7 +242,7 @@ public class SelectFragment extends AttachFragment {
     }
 
     private void dianBoCategoryRecommend(){
-        OkRequestEvents.dianBoCategoryRecommend(mApplicatin.getAccessToken(),new StringCallback(){
+        OkRequestEvents.dianBoCategoryRecommend(mApplication.getAccessToken(),new StringCallback(){
             @Override
             public void onError(Call call, Exception e, int id) {
                 Log.d(TAG,"onError");

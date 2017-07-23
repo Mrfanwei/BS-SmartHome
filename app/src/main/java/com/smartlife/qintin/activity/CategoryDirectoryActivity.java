@@ -1,31 +1,33 @@
 package com.smartlife.qintin.activity;
 
-import android.os.AsyncTask;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+
 import com.google.gson.Gson;
 import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.adapter.CategoryDirectoryAdapter;
 import com.smartlife.qintin.fragment.CategoryDirectory.CategoryListFragment;
+import com.smartlife.qintin.model.CategoryAllRadioModel;
 import com.smartlife.qintin.model.CategoryPropertyModel;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.utils.CommonUtils;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import okhttp3.Call;
 
-public class CategoryDirectoryActivity extends BaseActivity{
+public class CategoryDirectoryActivity extends BaseActivity implements CategoryListFragment.OnFragmentInteractionListener {
     private String TAG = "SmartLifee/Category";
     private String dbcategoryname;
     private int dbcategoryid;
@@ -34,7 +36,7 @@ public class CategoryDirectoryActivity extends BaseActivity{
     protected String[] titles;
     private boolean isFromCache = true;
     CategoryPropertyModel mCategoryPropertyModel = null;
-    MainApplication mApplicatin=null;
+    MainApplication mApplicatin = null;
     ArrayList<CategoryPropertyModel.DataBean.ValuesBean> mValues;
     ArrayList<CategoryListFragment> mListFragment;
     TabLayout tabLayout;
@@ -46,26 +48,26 @@ public class CategoryDirectoryActivity extends BaseActivity{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mApplicatin = (MainApplication)getApplication();
+        mApplicatin = (MainApplication) getApplication();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         if (getIntent().getExtras() != null) {
             dbcategoryname = getIntent().getStringExtra("dbcategoryname");
-            dbcategoryid = getIntent().getIntExtra("dbcategoryid",-1);
-            dbcategorysectionid = getIntent().getIntExtra("dbcategorysectionid",-1);
+            dbcategoryid = getIntent().getIntExtra("dbcategoryid", -1);
+            dbcategorysectionid = getIntent().getIntExtra("dbcategorysectionid", -1);
         }
         setContentView(R.layout.activity_category_directory);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         mStatusSize = CommonUtils.getStatusHeight(this);
         setupToolbar();
 
-        mViewPager = (ViewPager)findViewById(R.id.vp_showpage);
+        mViewPager = (ViewPager) findViewById(R.id.vp_showpage);
         mListFragment = new ArrayList<>();
 
-        tabLayout = (TabLayout)findViewById(R.id.tb_layout);
+        tabLayout = (TabLayout) findViewById(R.id.tb_layout);
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                Log.d(TAG,"tabLayout onTabSelected ="+tab.getPosition());
+                Log.d(TAG, "tabLayout onTabSelected =" + tab.getPosition());
             }
 
             @Override
@@ -75,7 +77,7 @@ public class CategoryDirectoryActivity extends BaseActivity{
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                Log.d(TAG,"tabLayout onTabReselected ="+tab.getPosition());
+                Log.d(TAG, "tabLayout onTabReselected =" + tab.getPosition());
             }
         });
         dianBoCategoryDirectory();
@@ -97,51 +99,59 @@ public class CategoryDirectoryActivity extends BaseActivity{
         toolbar.setSubtitle(dbcategoryname);
     }
 
-    private void dianBoCategoryDirectory(){
+    private void dianBoCategoryDirectory() {
         OkRequestEvents.dianBoCategoryDirectory(mApplicatin.getAccessToken(), dbcategoryid, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {
-                Log.d(TAG,"error");
+                Log.d(TAG, "error");
             }
 
             @Override
             public void onResponse(String response, int id) {
                 int mStatus = 0;
-                Log.d(TAG,"responseffff="+response);
+                Log.d(TAG, "responseffff=" + response);
                 mValues = new ArrayList<>();
-                List<String> mValueName= new ArrayList<>();
-                int i=0,index=0;
+                List<String> mValueName = new ArrayList<>();
+                int i = 0, index = 0;
                 Gson gson = new Gson();
                 mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
-                for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
-                    Log.d(TAG,"onResponse name ="+mdata.getName());
-                    if(mStatus == 0){
-                        for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
+                for (CategoryPropertyModel.DataBean mdata : mCategoryPropertyModel.getData()) {
+                    Log.d(TAG, "onResponse name =" + mdata.getName());
+                    if (mStatus == 0) {
+                        for (CategoryPropertyModel.DataBean.ValuesBean mvalue : mdata.getValues()) {
                             tabLayout.addTab(tabLayout.newTab().setText(mvalue.getName()));
-                            CategoryListFragment mList = new CategoryListFragment();
-                            Bundle args = new Bundle();
-                            args.putInt("dataid",mdata.getId());
-                            args.putInt("valueid",mvalue.getId());
-                            args.putString("tabname",mvalue.getName());
-                            mList.setArguments(args);
-                            mListFragment.add(mList);
+                            mListFragment.add(CategoryListFragment.newInstance(mdata.getId(), mvalue.getId(), mvalue.getName()));
                             mValueName.add(mvalue.getName());
                             mValues.add(mvalue);
-                            if(mvalue.getName().equals(dbcategoryname)){
-                                index =i;
+                            if (mvalue.getName().equals(dbcategoryname)) {
+                                index = i;
                             }
                             i++;
                         }
 
-                        CategoryDirectoryAdapter mCategoryDirectoryAdapter = new CategoryDirectoryAdapter(getSupportFragmentManager(),mListFragment,mValueName);
+                        CategoryDirectoryAdapter mCategoryDirectoryAdapter = new CategoryDirectoryAdapter(getSupportFragmentManager(), mListFragment, mValueName);
                         mViewPager.setAdapter(mCategoryDirectoryAdapter);
                         mViewPager.setOffscreenPageLimit(mListFragment.size());
                         mViewPager.setCurrentItem(index);
                         tabLayout.setupWithViewPager(mViewPager);
-                        mStatus =1;
+                        mStatus = 1;
                     }
                 }
             }
         });
+    }
+
+    @Override
+    public void startPlaylistActivity(CategoryAllRadioModel.DataBean bean) {
+        Intent intent = new Intent(this, PlaylistActivity.class);
+        intent.putExtra("itemcount", bean.getProgram_count());
+        intent.putExtra("playlistid", "1");
+        intent.putExtra("recommendsTitle", bean.getTitle());
+        intent.putExtra("parent_id", bean.getId());
+        intent.putExtra("thumb", bean.getThumbs().getSmall_thumb());
+        intent.putExtra("detailTitle", bean.getTitle());
+        intent.putExtra("detailDuration", 111);
+        intent.putExtra("domainUrl", mApplicatin.getDomainUrl());
+        startActivity(intent);
     }
 }

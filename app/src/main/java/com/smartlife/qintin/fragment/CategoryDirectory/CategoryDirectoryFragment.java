@@ -280,7 +280,7 @@ public class CategoryDirectoryFragment extends AttachFragment {
                     OkHttpUtils
                             .post()
                             .url(mDianboCategoryRecommendUrl)
-                            .addParams("access_token",mApplicatin.getAccessToken())
+                            .addParams("access_token", mApplication.getAccessToken())
                             .build()
                             .execute(new StringCallback() {
                                 @Override

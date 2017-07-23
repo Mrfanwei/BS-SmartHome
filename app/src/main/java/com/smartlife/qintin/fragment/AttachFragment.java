@@ -11,7 +11,7 @@ import com.smartlife.MainApplication;
 public class AttachFragment extends Fragment {
     private String TAG = "SmartLifee/AttachF";
     public Activity mContext;
-    public MainApplication mApplicatin = MainApplication.getInstance();
+    public MainApplication mApplication = MainApplication.getInstance();
     //public String mTokenType;
     //public String mAccessToken;
    // private int mExpiresIn;
