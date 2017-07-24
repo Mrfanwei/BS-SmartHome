@@ -323,7 +323,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     }
 
     @Override
-    public void startPlaylistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean) {
+    public void startMusiclistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean) {
         Intent intent = new Intent(this, PlaylistActivity.class);
         intent.putExtra("dbcategoryname",bean.getTitle());
         intent.putExtra("itemcount",20);
@@ -342,6 +342,31 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         intent.putExtra("dbcategoryname",bean.getName());
         intent.putExtra("dbcategoryid",bean.getId());
         intent.putExtra("dbcategorysectionid",bean.getSection_id());
+        startActivity(intent);
+    }
+
+    @Override
+    public void startPlaylistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean) {
+        Intent intent = new Intent(this, PlaylistActivity.class);
+        intent.putExtra("itemcount", 20);
+        intent.putExtra("playlistid", "1");
+        intent.putExtra("playlistcount", "11");
+        intent.putExtra("recommendsTitle", bean.getTitle());
+        intent.putExtra("parent_id",bean.getParent_info().getParent_id());
+        if(bean.getParent_info()!=null){
+            intent.putExtra("parent_name",bean.getParent_info().getParent_name());
+        }else{
+            intent.putExtra("parent_name","null");
+
+        }
+        intent.putExtra("thumb",bean.getThumb());
+        intent.putExtra("recommendsSequence",bean.getSequence());
+        intent.putExtra("detailTitle",bean.getDetail().getTitle());
+        intent.putExtra("detailDuration",bean.getDetail().getDuration());
+        if(bean.getDetail().getMediainfo()!=null){
+            intent.putExtra("file_path",bean.getDetail().getMediainfo().getBitrates_url().get(0).getFile_path());
+        }
+
         startActivity(intent);
     }
 

@@ -86,7 +86,7 @@ public class MusicFragment extends AttachFragment {
     }
 
     public interface OnFragmentInteractionListener {
-        void startPlaylistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean);
+        void startMusiclistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean);
     }
 
 
@@ -281,7 +281,7 @@ public class MusicFragment extends AttachFragment {
             ((ItemView) holder).itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.startPlaylistActivity(info);
+                    mListener.startMusiclistActivity(info);
                 }
             });
         }
