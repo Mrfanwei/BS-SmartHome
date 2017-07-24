@@ -552,20 +552,13 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
 
             @Override
             public void onClick(View v) {
-                /*mHandler.postDelayed(new Runnable() {
+                mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (getAdapterPosition() > 0)
                             MusicPlayer.playAll(itemInfos,itemlist, getAdapterPosition() - 1, false);
                     }
-                }, 10);*/
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        MusicPlayer.playAll(itemInfos,itemlist, getAdapterPosition() - 1, false);
-                    }
-                }).start();
+                }, 10);
             }
 
         }

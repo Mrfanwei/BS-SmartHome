@@ -323,7 +323,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     }
 
     @Override
-    public void startMusiclistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean) {
+    public void startMusicListActivity(DianBoRecommendModel.DataBean.RecommendsBean bean) {
         Intent intent = new Intent(this, PlaylistActivity.class);
         intent.putExtra("dbcategoryname",bean.getTitle());
         intent.putExtra("itemcount",20);
