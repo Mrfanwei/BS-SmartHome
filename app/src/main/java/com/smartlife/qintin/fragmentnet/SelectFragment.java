@@ -1,5 +1,7 @@
 package com.smartlife.qintin.fragmentnet;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -69,9 +71,30 @@ public class SelectFragment extends AttachFragment {
     private LoodView mLoodView;
     public MainActivity mActivity;
     private boolean isFirstLoad = true;
+    private OnFragmentInteractionListener mListener;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
+    }
+
+    public interface OnFragmentInteractionListener {
+        void startPlaylistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     @Override
@@ -155,7 +178,6 @@ public class SelectFragment extends AttachFragment {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Log.d(TAG,"onCreateViewHolder");
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
             ItemView viewholder = new ItemView(layoutInflater.inflate(R.layout.recommend_playlist_item, parent, false));
             return viewholder;
@@ -163,7 +185,6 @@ public class SelectFragment extends AttachFragment {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            Log.d(TAG,"onBindViewHolder");
             final DianBoRecommendModel.DataBean.RecommendsBean info = mList.get(position);
 
             ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(info.getThumb()))
@@ -180,42 +201,11 @@ public class SelectFragment extends AttachFragment {
             ((ItemView) holder).name.setText(info.getTitle());
             ((ItemView) holder).count.setText(spanString);
 
-            //int count = Integer.parseInt(info.getListenum());
-            int count = Integer.parseInt("100");
-            if (count > 10000) {
-                count = count / 10000;
-                ((ItemView) holder).count.append(" " + count + "万");
-            } else {
-               // ((ItemView) holder).count.append(" " + info.getListenum());
-                ((ItemView) holder).count.append(" " + "万");
-            }
             ((ItemView) holder).itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG,"itemView.setOnClickListener");
-                Intent intent = new Intent(mActivity, PlaylistActivity.class);
-                intent.putExtra("itemcount",20);
-                intent.putExtra("playlistid", "1");
-                intent.putExtra("playlistcount", "11");
-                intent.putExtra("recommendsTitle",info.getTitle());
-                Log.d(TAG,"recommendsTitle ="+info.getTitle());
-                intent.putExtra("parent_id",info.getParent_info().getParent_id());
-                if(info.getParent_info()!=null){
-                    intent.putExtra("parent_name",info.getParent_info().getParent_name());
-                }else{
-                    intent.putExtra("parent_name","null");
+                    mListener.startPlaylistActivity(info);
                 }
-                intent.putExtra("thumb",info.getThumb());
-                intent.putExtra("recommendsSequence",info.getSequence());
-                intent.putExtra("detailTitle",info.getDetail().getTitle());
-                intent.putExtra("detailDuration",info.getDetail().getDuration());
-                if(info.getDetail().getMediainfo()!=null){
-                    intent.putExtra("file_path",info.getDetail().getMediainfo().getBitrates_url().get(0).getFile_path());
-                }else{
-                    intent.putExtra("file_path","null");
-                }
-                mContext.startActivity(intent);
-            }
             });
         }
 

@@ -1,5 +1,7 @@
 package com.smartlife.qintin.fragmentnet;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -57,11 +59,32 @@ public class CategoryFragment extends AttachFragment {
     private LoodView mLoodView;
     public MainActivity mActivity;
     private boolean isFirstLoad = true;
-
+    private CategoryFragment.OnFragmentInteractionListener mListener;
     DianBoModel mDianBoModel=null;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
+    }
+
+    public interface OnFragmentInteractionListener {
+
+        void startCategoryDirectoryActivity(DianBoModel.DataBean bean);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MusicFragment.OnFragmentInteractionListener) {
+            mListener = (CategoryFragment.OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     @Override
@@ -190,11 +213,7 @@ public class CategoryFragment extends AttachFragment {
             ((ItemView) holder).itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(mActivity, CategoryDirectoryActivity.class);
-                    intent.putExtra("dbcategoryname",info.getName());
-                    intent.putExtra("dbcategoryid",info.getId());
-                    intent.putExtra("dbcategorysectionid",info.getSection_id());
-                    mContext.startActivity(intent);
+                    mListener.startCategoryDirectoryActivity(info);
                 }
             });
         }

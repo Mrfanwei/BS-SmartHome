@@ -31,7 +31,9 @@ import com.smartlife.http.OkRequestEvents;
 import com.smartlife.huanxin.fragment.RobotStatusFragment;
 import com.smartlife.netty.fragment.NettyFragment;
 import com.smartlife.qintin.activity.BaseActivity;
+import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.activity.NetSearchWordsActivity;
+import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.adapter.MenuItemAdapter;
 import com.smartlife.qintin.dialog.CardPickerDialog;
 import com.smartlife.qintin.fragmentnet.CategoryFragment;
@@ -40,6 +42,8 @@ import com.smartlife.qintin.fragmentnet.RadioFragment;
 import com.smartlife.qintin.fragmentnet.SelectFragment;
 import com.smartlife.qintin.handler.HandlerUtil;
 import com.smartlife.qintin.model.CredentialModel;
+import com.smartlife.qintin.model.DianBoModel;
+import com.smartlife.qintin.model.DianBoRecommendModel;
 import com.smartlife.qintin.model.DomainCenterModel;
 import com.smartlife.qintin.service.MusicPlayer;
 import com.smartlife.qintin.uitl.ThemeHelper;
@@ -56,7 +60,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener {
+public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener,MusicFragment.OnFragmentInteractionListener,CategoryFragment.OnFragmentInteractionListener,SelectFragment.OnFragmentInteractionListener{
     public String TAG = "SmartLifee/MainAct";
     private ActionBar ab;
     private TextView tvSelectionBar, tvCategoryBar, tvRadioBar, tvMusicBar;
@@ -316,6 +320,29 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
             );
         }
         changeTheme();
+    }
+
+    @Override
+    public void startPlaylistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean) {
+        Intent intent = new Intent(this, PlaylistActivity.class);
+        intent.putExtra("dbcategoryname",bean.getTitle());
+        intent.putExtra("itemcount",20);
+        intent.putExtra("playlistid", "1");
+        intent.putExtra("recommendsTitle",bean.getTitle());
+        intent.putExtra("parent_id",bean.getParent_info().getParent_id());
+        intent.putExtra("thumb",bean.getThumbs().getSmall_thumb());
+        intent.putExtra("detailTitle",bean.getTitle());
+        intent.putExtra("detailDuration",111);
+        startActivity(intent);
+    }
+
+    @Override
+    public void startCategoryDirectoryActivity(DianBoModel.DataBean bean) {
+        Intent intent = new Intent(this, CategoryDirectoryActivity.class);
+        intent.putExtra("dbcategoryname",bean.getName());
+        intent.putExtra("dbcategoryid",bean.getId());
+        intent.putExtra("dbcategorysectionid",bean.getSection_id());
+        startActivity(intent);
     }
 
     static class CustomViewPagerAdapter extends FragmentPagerAdapter {

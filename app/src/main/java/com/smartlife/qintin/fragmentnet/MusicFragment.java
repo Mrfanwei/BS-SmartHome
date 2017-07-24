@@ -1,5 +1,7 @@
 package com.smartlife.qintin.fragmentnet;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -77,9 +79,31 @@ public class MusicFragment extends AttachFragment {
     private List<CategoryPropertyModel.DataBean.ValuesBean > mCategoryPropertyList;
     private List<CategoryPropertyModel.DataBean> mDataBean;
     MusicListAdapter mMusicRecommendAdapter;
+    private OnFragmentInteractionListener mListener;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
+    }
+
+    public interface OnFragmentInteractionListener {
+        void startPlaylistActivity(DianBoRecommendModel.DataBean.RecommendsBean bean);
+    }
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
     }
 
     @Override
@@ -159,7 +183,6 @@ public class MusicFragment extends AttachFragment {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Log.d(TAG,"onCreateViewHolder");
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
             ContentItemView viewholder = new ContentItemView(layoutInflater.inflate(R.layout.radio_playlist_item, parent, false));
             return viewholder;
@@ -200,8 +223,6 @@ public class MusicFragment extends AttachFragment {
             if (mList == null) {
                 return 0;
             }
-
-            Log.d(TAG,"getItemCount count ="+showCount);
             return showCount;
         }
 
@@ -229,14 +250,12 @@ public class MusicFragment extends AttachFragment {
         }
 
         public void update(List<DianBoRecommendModel.DataBean.RecommendsBean> list) {
-            Log.d(TAG,"update");
             mList = list;
             notifyDataSetChanged();
         }
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Log.d(TAG,"onCreateViewHolder");
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
             ItemView viewholder = new ItemView(layoutInflater.inflate(R.layout.playing_list_item, parent, false));
             return viewholder;
@@ -256,23 +275,13 @@ public class MusicFragment extends AttachFragment {
                     .setImageRequest(request)
                     .build();
             ((ItemView) holder).art.setController(controller);
-            Log.d(TAG,"getParent_name()="+info.getParent_info().getParent_name()+" title="+info.getTitle());
             ((ItemView) holder).title.setText(info.getParent_info().getParent_name());
             ((ItemView) holder).subtitle.setText(info.getTitle());
 
             ((ItemView) holder).itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(mActivity, PlaylistActivity.class);
-                    intent.putExtra("dbcategoryname",info.getTitle());
-                    intent.putExtra("itemcount",20);
-                    intent.putExtra("playlistid", "1");
-                    intent.putExtra("recommendsTitle",info.getTitle());
-                    intent.putExtra("parent_id",info.getParent_info().getParent_id());
-                    intent.putExtra("thumb",info.getThumbs().getSmall_thumb());
-                    intent.putExtra("detailTitle",info.getTitle());
-                    intent.putExtra("detailDuration",111);
-                    getActivity().startActivity(intent);
+                    mListener.startPlaylistActivity(info);
                 }
             });
         }
