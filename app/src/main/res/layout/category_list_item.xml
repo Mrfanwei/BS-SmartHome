@@ -1,13 +1,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:fresco="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="55dp"
+    android:layout_height="90dp"
     android:background="?attr/selectableItemBackground">
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:id="@+id/viewpager_list_img"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         android:layout_marginLeft="7dp"
@@ -33,7 +33,6 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:singleLine="true"
-            android:text="如果我变成回忆"
             android:textColor="@color/listTextColor"
             android:textSize="16sp" />
 

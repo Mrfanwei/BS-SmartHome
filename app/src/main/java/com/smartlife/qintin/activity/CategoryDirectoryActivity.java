@@ -31,8 +31,6 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
     private String TAG = "SmartLifee/Category";
     private String dbcategoryname;
     private int dbcategoryid;
-    private int dbcategorysectionid;
-    private FragmentManager fm;
     protected String[] titles;
     private boolean isFromCache = true;
     CategoryPropertyModel mCategoryPropertyModel = null;
@@ -53,7 +51,6 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
         if (getIntent().getExtras() != null) {
             dbcategoryname = getIntent().getStringExtra("dbcategoryname");
             dbcategoryid = getIntent().getIntExtra("dbcategoryid", -1);
-            dbcategorysectionid = getIntent().getIntExtra("dbcategorysectionid", -1);
         }
         setContentView(R.layout.activity_category_directory);
         toolbar = (Toolbar) findViewById(R.id.toolbar);

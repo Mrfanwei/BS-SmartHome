@@ -337,6 +337,14 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     }
 
     @Override
+    public void startCategoryDirectoryActivity(String musicname, int musicid) {
+        Intent intent = new Intent(this, CategoryDirectoryActivity.class);
+        intent.putExtra("dbcategoryname", musicname);
+        intent.putExtra("dbcategoryid", musicid);
+        startActivity(intent);
+    }
+
+    @Override
     public void startCategoryDirectoryActivity(DianBoModel.DataBean bean) {
         Intent intent = new Intent(this, CategoryDirectoryActivity.class);
         intent.putExtra("dbcategoryname",bean.getName());

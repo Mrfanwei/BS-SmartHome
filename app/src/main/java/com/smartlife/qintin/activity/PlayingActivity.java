@@ -121,7 +121,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
     private long lastAlbum;
     private PlayMusic mPlayThread;
     private boolean print = true;
-    private String TAG = "SmartLife/PlayAct";
+    private String TAG = "SmartLife/PlayAty";
     INettyPresenter mINettyPresenter;
     DlanManager mDlanManager;
 
@@ -305,7 +305,6 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
 
         setSeekBarListener();
         setTools();
-
     }
 
     private void setViewPager() {
@@ -1096,35 +1095,6 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
             this.animTime = animTime;
         }
     }
-
-
-//    private Thread mPlayThread = new Thread(new Runnable() {
-//        @Override
-//        public void run() {
-//            Looper.prepare();
-//            mPlayHandler = new Handler(){
-//                @Override
-//                public void handleMessage(Message msg) {
-//                    super.handleMessage(msg);
-//                    switch (msg.what){
-//                        case PRE_MUSIC:
-//                            MusicPlayer.previous(PlayingActivity.this,true);
-//                            break;
-//                        case NEXT_MUSIC:
-//                            MusicPlayer.next();
-//                            break;
-//                        case 3:
-//                            MusicPlayer.setQueuePosition(msg.arg1);
-//                            break;
-//                    }
-//
-//
-//                }
-//            };
-//
-//            Looper.loop();
-//        }
-//    });
 
     public class PlayMusic extends Thread {
         public void run(){

@@ -642,7 +642,6 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
     };
 
     private void dianBoPlayList(int page){
-        Log.d(TAG,"dianBoPlayList playParentId = "+playParentId);
         OkRequestEvents.dianBoPlayList(mApplicatin.getAccessToken(), playParentId, page, new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id) {

@@ -87,6 +87,8 @@ public class MusicFragment extends AttachFragment {
 
     public interface OnFragmentInteractionListener {
         void startMusicListActivity(DianBoRecommendModel.DataBean.RecommendsBean bean);
+
+        void startCategoryDirectoryActivity(String musicname,int musicid);
     }
 
 
@@ -209,10 +211,7 @@ public class MusicFragment extends AttachFragment {
                         showCount=8;
                         notifyDataSetChanged();
                     }else {
-                        Intent intent = new Intent(mActivity, CategoryDirectoryActivity.class);
-                        intent.putExtra("dbcategoryname", info.getName());
-                        intent.putExtra("dbcategoryid", musicalbumid);
-                        mContext.startActivity(intent);
+                        mListener.startCategoryDirectoryActivity(info.getName(),musicalbumid);
                     }
                 }
             });
@@ -307,21 +306,6 @@ public class MusicFragment extends AttachFragment {
         }
     }
 
-    Handler mHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what){
-                case 0:
-                    dianBoMusicAlbum();
-                    break;
-                case 1:
-                    dianboMusic();
-                    break;
-            }
-        }
-    };
-
     private void dianBoCategoryProgram(){
         OkRequestEvents.dianBoCategoryProgram(mApplication.getAccessToken(), new StringCallback(){
             @Override
@@ -340,7 +324,7 @@ public class MusicFragment extends AttachFragment {
                         if(mData.getName().equals("音乐")){
                             musicalbumid=mData.getId();
                             musicsectionid = mData.getSection_id();
-                            HandlerUtil.sendmsg(mHandler,null,0);
+                            dianBoMusicAlbum();
                         }
                     }
                 }
@@ -376,7 +360,7 @@ public class MusicFragment extends AttachFragment {
                             mAdapter.update(mCategoryPropertyList);
                         }
                     }
-                    HandlerUtil.sendmsg(mHandler,null,1);
+                    dianboMusic();
                 }
             }
         });
