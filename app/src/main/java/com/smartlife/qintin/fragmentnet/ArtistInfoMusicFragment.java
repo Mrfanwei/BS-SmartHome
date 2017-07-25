@@ -238,8 +238,8 @@ public class ArtistInfoMusicFragment extends BaseFragment {
 
             public ItemViewHolder(View view) {
                 super(view);
-                this.title = (TextView) view.findViewById(R.id.song_title);
-                this.artist = (TextView) view.findViewById(R.id.song_subtitle);
+                this.title = (TextView) view.findViewById(R.id.tv_title);
+                this.artist = (TextView) view.findViewById(R.id.tv_update_time);
                 this.menu = (ImageView) view.findViewById(R.id.popup_menu);
                 this.playState = (TintImageView) view.findViewById(R.id.play_state);
                 view.setOnClickListener(this);

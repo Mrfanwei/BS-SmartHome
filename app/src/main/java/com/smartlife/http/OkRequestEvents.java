@@ -155,8 +155,8 @@ public class OkRequestEvents {
     /**
      * 点播音乐play list
      */
-    public static void dianBoPlayList(String access_token,int parentid,int page,int count,StringCallback callback) {
-
+    public static void dianBoPlayList(String access_token,int parentid,int page,StringCallback callback) {
+        int count = 15;
         HashMap<String, String> params = BaseRequestParams();
         params.put("access_token", access_token);
 

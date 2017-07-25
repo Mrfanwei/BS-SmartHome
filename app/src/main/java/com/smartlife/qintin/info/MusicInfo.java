@@ -30,6 +30,8 @@ public class MusicInfo implements Parcelable {
     /**
      * 数据库中的_id
      */
+    public String updataTime;
+    public String playCount;
     public long songId = -1;
     public int albumId = -1;
     public String albumName;

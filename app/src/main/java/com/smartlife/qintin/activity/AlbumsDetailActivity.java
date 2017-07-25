@@ -501,7 +501,7 @@ public class AlbumsDetailActivity extends BaseActivity implements ObservableScro
                     ((ItemViewHolder) itemHolder).playState.setVisibility(View.GONE);
                 }
                 ((ItemViewHolder) itemHolder).title.setText(localItem.musicName);
-                ((ItemViewHolder) itemHolder).artist.setText(localItem.artist);
+                ((ItemViewHolder) itemHolder).updatetime.setText(localItem.artist);
                 ((ItemViewHolder) itemHolder).menu.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -584,14 +584,16 @@ public class AlbumsDetailActivity extends BaseActivity implements ObservableScro
         }
 
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-            protected TextView title, artist;
+            protected TextView title, updatetime,listenercount,duration;
             protected ImageView menu;
             TintImageView playState;
 
             public ItemViewHolder(View view) {
                 super(view);
-                this.title = (TextView) view.findViewById(R.id.song_title);
-                this.artist = (TextView) view.findViewById(R.id.song_subtitle);
+                this.title = (TextView) view.findViewById(R.id.tv_title);
+                this.updatetime = (TextView) view.findViewById(R.id.tv_update_time);
+                this.listenercount = (TextView) view.findViewById(R.id.tv_play_count);
+                this.duration = (TextView)view.findViewById(R.id.tv_duration);
                 this.menu = (ImageView) view.findViewById(R.id.popup_menu);
                 this.playState = (TintImageView) view.findViewById(R.id.play_state);
                 view.setOnClickListener(this);

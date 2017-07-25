@@ -41,6 +41,7 @@ import com.smartlife.qintin.model.DianBoRecommendModel.DataBean.RecommendsBean;
 import com.smartlife.qintin.model.LoodModel;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
+import com.smartlife.utils.ToastUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
@@ -56,7 +57,6 @@ import okhttp3.Call;
 public class SelectFragment extends AttachFragment {
 
     private String TAG = "SmartLifee/SelectF";
-
     private RecommendAdapter mAdapter;
     private int width = 160, height = 160;
     private LinearLayout mViewContent;;
@@ -240,6 +240,12 @@ public class SelectFragment extends AttachFragment {
 
             @Override
             public void onResponse(String response, int id) {
+                int count = response.length()/1000;
+                for(int i=0;i<count;i++) {
+                    Log.d(TAG, response.substring(i*1000,i*1000+1000));
+                }
+                Log.d(TAG,response.substring(count*1000,response.length()));
+
                 DianBoRecommendModel mDianBoRecommendModel;
                 List<RecommendsBean> mList;
                 LoodModel mLoodModel;
@@ -248,31 +254,40 @@ public class SelectFragment extends AttachFragment {
                 Gson gson = new Gson();
                 mDianBoRecommendModel = gson.fromJson(response,DianBoRecommendModel.class);
                 mViewContent.removeView(mLoadView);
-                for(DianBoRecommendModel.DataBean mdata: mDianBoRecommendModel.getData()){
-                    mList = new ArrayList<>();
-                    mAdapter = new RecommendAdapter(null);
-                    mLoodModelList.clear();
-                    for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
-                        if(mRecommend.getDetail().getType().equals("program_ondemand")){
-                            mList .add(mRecommend);
-
-                            mLoodModel = new LoodModel();
-                            mLoodModel.setThumb(mRecommend.getThumb());
-                            mLoodModel.setId(mRecommend.getParent_info().getParent_id());
-                            mLoodModelList.add(mLoodModel);
+                if(mDianBoRecommendModel.getErrorno() == 0){
+                    for(DianBoRecommendModel.DataBean mdata: mDianBoRecommendModel.getData()){
+                        mList = new ArrayList<>();
+                        mAdapter = new RecommendAdapter(null);
+                        mLoodModelList.clear();
+                        for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
+                            if(mRecommend.getDetail().getType().equals("program_ondemand")){
+                                mList .add(mRecommend);
+                                mLoodModel = new LoodModel();
+                                mLoodModel.setThumb(mRecommend.getThumb());
+                                mLoodModel.setId(mRecommend.getParent_info().getParent_id());
+                                mLoodModelList.add(mLoodModel);
+                            }
                         }
-                    }
-                    if(mList.size() >2){
 
                         if(mdata.getName().equals("banner")){
+                            Log.d(TAG,"banner mLoodModelList="+mLoodModelList.size());
                             mLoodView.updataData(mLoodModelList);
-                        }else{
-                            showList(mdata.getName(),mAdapter);
-                            mAdapter.update(mList);
                         }
 
+                        if(mList.size() > 2){
+                            if(mdata.getName().equals("banner")){
+                                //Log.d(TAG,"banner mLoodModelList="+mLoodModelList.size());
+                                //mLoodView.updataData(mLoodModelList);
+                            }else{
+                                showList(mdata.getName(),mAdapter);
+                                mAdapter.update(mList);
+                            }
+                        }
                     }
+                }else{
+                    ToastUtil.showShort("无数据");
                 }
+
             }
         });
     }

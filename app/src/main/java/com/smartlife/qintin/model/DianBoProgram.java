@@ -88,6 +88,11 @@ public class DianBoProgram {
         private String type;
         private String update_time;
         private String weburl;
+        /**
+         * playcount : 40.8万
+         */
+
+        private String playcount;
 
         public int getChatgroup_id() {
             return chatgroup_id;
@@ -175,6 +180,14 @@ public class DianBoProgram {
 
         public void setSequence(int sequence) {
             this.sequence = sequence;
+        }
+
+        public String getPlaycount() {
+            return playcount;
+        }
+
+        public void setPlaycount(String playcount) {
+            this.playcount = playcount;
         }
 
         public Object getThumbs() {

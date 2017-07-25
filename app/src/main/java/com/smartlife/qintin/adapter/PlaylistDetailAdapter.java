@@ -142,8 +142,8 @@ public class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
         public ItemViewHolder(View view) {
             super(view);
-            this.title = (TextView) view.findViewById(R.id.song_title);
-            this.artist = (TextView) view.findViewById(R.id.song_subtitle);
+            this.title = (TextView) view.findViewById(R.id.tv_title);
+            this.artist = (TextView) view.findViewById(R.id.tv_update_time);
             this.menu = (ImageView) view.findViewById(R.id.popup_menu);
             view.setOnClickListener(this);
         }
