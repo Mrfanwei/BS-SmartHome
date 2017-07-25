@@ -54,6 +54,7 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.smartlife.R;
 import com.smartlife.dlan.manager.DlanManager;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.netty.presenter.INettyPresenter;
 import com.smartlife.netty.presenter.INettyPresenterImpl;
 import com.smartlife.netty.view.INettyView;
@@ -74,9 +75,7 @@ import com.smartlife.qintin.uitl.L;
 import com.smartlife.qintin.uitl.MusicUtils;
 import com.smartlife.qintin.widget.AlbumViewPager;
 import com.smartlife.qintin.widget.PlayerSeekBar;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -86,15 +85,9 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.List;
-
 import okhttp3.Call;
-
 import static com.smartlife.qintin.service.MusicPlayer.getAlbumPath;
 
-
-/**
- * Created by wm on 2016/2/21.
- */
 public class PlayingActivity extends BaseActivity implements IConstants,INettyView{
     private ImageView mBackAlbum, mPlayingmode, mControl, mNext, mPre, mPlaylist, mCmt, mFav, mDown, mMore, mNeedle;
     private TextView mTimePlayed, mDuration;
@@ -129,9 +122,6 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
     private PlayMusic mPlayThread;
     private boolean print = true;
     private String TAG = "SmartLife/PlayAct";
-    CollectionTask mInsertMusicTask=null;
-    CollectionTask mGetMusicTask=null;
-    CollectionTask mDeleteMusicTask = null;
     INettyPresenter mINettyPresenter;
     DlanManager mDlanManager;
 
@@ -522,24 +512,48 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
     }
 
     private void insertMusicData(int albumid,String filepath){
-        if (mInsertMusicTask == null || mInsertMusicTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mInsertMusicTask = new CollectionTask(albumid,filepath);
-            mInsertMusicTask.execute(0, 0, 1);
-        }
+
+        OkRequestEvents.insertMusicData("www", filepath, albumid, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+                Log.d(TAG,"onError");
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                Log.d(TAG,"insertMusicData");
+            }
+        });
     }
 
     private void getMusicData(){
-        if (mGetMusicTask == null || mGetMusicTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mGetMusicTask = new CollectionTask(0,null);
-            mGetMusicTask.execute(0, 0, 2);
-        }
+
+        OkRequestEvents.getMusicInfo(new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                Log.d(TAG,"getMusicData");
+            }
+        });
     }
 
     private void deleteMusicData(int albumid,String filepath){
-        if (mDeleteMusicTask == null || mDeleteMusicTask.getStatus().equals(AsyncTask.Status.FINISHED)) {
-            mDeleteMusicTask = new CollectionTask(albumid,filepath);
-            mDeleteMusicTask.execute(0, 0, 3);
-        }
+
+        OkRequestEvents.deleteMusicInfo(filepath, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id) {
+
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                Log.d(TAG,"deleteMusicData");
+            }
+        });
     }
 
     Runnable mNextRunnable = new Runnable() {
@@ -913,9 +927,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
                 mNewOpts.inPreferredConfig = Bitmap.Config.RGB_565;
             }
             if (!MusicPlayer.isTrackLocal()) {
-                L.D(print, TAG, "music is net");
                 if (getAlbumPath() == null) {
-                    L.D(print, TAG, "getalbumpath is null");
                     mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.placeholder_disk_210);
                     drawable = ImageUtils.createBlurredImageFromBitmap(mBitmap, PlayingActivity.this.getApplication(), 3);
                     return drawable;
@@ -1137,91 +1149,6 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
                 };
 
                 Looper.loop();
-
-        }
-    }
-
-    class CollectionTask extends AsyncTask<Integer, Integer, Integer> {
-        private int albumid;
-        private String filepath;
-        public CollectionTask(int albumid,String filepath){
-            Log.d(TAG,"CollectionTask");
-            this.albumid = albumid;
-            this.filepath = filepath;
-        }
-
-        @Override
-        protected Integer doInBackground(Integer... integers) {
-            switch (integers[2]) {
-                case 1:
-                    OkHttpUtils
-                            .post()
-                            .url("http://112.74.175.96:8080/insertMusicData")
-                            .addParams("phone","pzz66677")
-                            .addParams("parentid","pz999977")
-                            .addParams("filepath",filepath)
-                            .addParams("albumid",Integer.toString(albumid))
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    Log.d(TAG,"onResponse19 ="+ response+" id="+id);
-                                }
-                            });
-                    break;
-                case 2:
-                    OkHttpUtils
-                            .post()
-                            .url("http://112.74.175.96:8080/getMusicInfo")
-                            .addParams("phonename", "pzz66677")
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError");
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    Log.d(TAG,"onResponse20 ="+ response+" id="+id);
-                                    Log.d(TAG,"");
-
-                                }
-                            });
-                    break;
-                case 3:
-                    OkHttpUtils
-                            .post()
-                            .url("http://192.168.0.6:8080/deleteMusicInfo")
-                            .addParams("phonename", "1866666")
-                            .addParams("filepath",filepath)
-                            .build()
-                            .execute(new StringCallback() {
-                                @Override
-                                public void onError(Call call, Exception e, int id) {
-                                    Log.d(TAG,"onError ="+e);
-                                }
-
-                                @Override
-                                public void onResponse(String response, int id) {
-                                    Log.d(TAG,"onResponse20 ="+ response+" id="+id);
-
-                                }
-                            });
-                    break;
-                case 4:
-                    break;
-                case 5:
-                    break;
-                case 6:
-                    break;
-            }
-            return null;
         }
     }
 }

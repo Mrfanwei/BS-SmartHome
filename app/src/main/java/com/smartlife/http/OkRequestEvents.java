@@ -204,4 +204,36 @@ public class OkRequestEvents {
 
         postImpl("http://112.74.175.96:8080/getRobotInfo", callback, params, null);
     }
+
+    /**
+     * 插入music数据
+     * */
+    public static void insertMusicData(String parentid,String filepath,int albumid,StringCallback callback){
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("phone", DemoHelper.getInstance().getCurrentUsernName());
+        params.put("parentid",parentid);
+        params.put("filepath",filepath);
+        params.put("albumid",Integer.toString(albumid));
+
+        postImpl("http://112.74.175.96:8080/insertMusicData", callback, params, null);
+    }
+
+    /**
+     * 获取music数据
+     * */
+    public static void getMusicInfo(StringCallback callback){
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("phone", DemoHelper.getInstance().getCurrentUsernName());
+        postImpl("http://112.74.175.96:8080/getMusicInfo", callback, params, null);
+    }
+
+    /**
+     * delete music数据
+     * */
+    public static void deleteMusicInfo(String filepath,StringCallback callback){
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("phone", DemoHelper.getInstance().getCurrentUsernName());
+        params.put("filepath", filepath);
+        postImpl("http://192.168.0.6:8080/deleteMusicInfo", callback, params, null);
+    }
 }

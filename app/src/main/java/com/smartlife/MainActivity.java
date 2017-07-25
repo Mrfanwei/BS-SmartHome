@@ -330,7 +330,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         intent.putExtra("playlistid", "1");
         intent.putExtra("recommendsTitle",bean.getTitle());
         intent.putExtra("parent_id",bean.getParent_info().getParent_id());
-        intent.putExtra("thumb",bean.getThumbs().getSmall_thumb());
+        intent.putExtra("thumb",bean.getThumb());
         intent.putExtra("detailTitle",bean.getTitle());
         intent.putExtra("detailDuration",111);
         startActivity(intent);

@@ -432,7 +432,6 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             actionBar.setBackgroundDrawable(getResources().getDrawable(R.drawable.toolbar_background));
         }
         if (scrollY == 0) {
-            toolbar.setTitle("歌单");
             actionBar.setBackgroundDrawable(null);
         }
 

@@ -331,17 +331,17 @@ public class MusicFragment extends AttachFragment {
 
             @Override
             public void onResponse(String response, int id) {
-                List<DataBean> mList = new ArrayList<>();
-                DianBoModel mDianBoModel=null;
-                int count =0;
+                DianBoModel mDianBoModel;
                 Gson gson = new Gson();
                 mDianBoModel = gson.fromJson(response,DianBoModel.class);
-                mViewContent.removeView(mLoadView);
-                for(DianBoModel.DataBean mData : mDianBoModel.getData()){
-                    if(mData.getName().equals("音乐")){
-                        musicalbumid=mData.getId();
-                        musicsectionid = mData.getSection_id();
-                        HandlerUtil.sendmsg(mHandler,null,0);
+                if(mDianBoModel.getErrorno() == 0){
+                    mViewContent.removeView(mLoadView);
+                    for(DianBoModel.DataBean mData : mDianBoModel.getData()){
+                        if(mData.getName().equals("音乐")){
+                            musicalbumid=mData.getId();
+                            musicsectionid = mData.getSection_id();
+                            HandlerUtil.sendmsg(mHandler,null,0);
+                        }
                     }
                 }
             }
@@ -362,20 +362,22 @@ public class MusicFragment extends AttachFragment {
 
                 Gson gson = new Gson();
                 mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
-                mViewContent.removeView(mLoadView);
-                for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
-                    if(mdata.getName().equals("内容")){
-                        for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
-                            mCategoryPropertyList.add(mvalue);
+                if(mCategoryPropertyModel.getErrorno() == 0){
+                    mViewContent.removeView(mLoadView);
+                    for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
+                        if(mdata.getName().equals("内容")){
+                            for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
+                                mCategoryPropertyList.add(mvalue);
+                            }
+                            CategoryPropertyModel.DataBean.ValuesBean mValuesBean = new CategoryPropertyModel.DataBean.ValuesBean();
+                            mValuesBean.setName("more");
+                            mCategoryPropertyList.add(mValuesBean);
+                            showContentCategoryList(mdata.getName(),mAdapter);
+                            mAdapter.update(mCategoryPropertyList);
                         }
-                        CategoryPropertyModel.DataBean.ValuesBean mValuesBean = new CategoryPropertyModel.DataBean.ValuesBean();
-                        mValuesBean.setName("more");
-                        mCategoryPropertyList.add(mValuesBean);
-                        showContentCategoryList(mdata.getName(),mAdapter);
-                        mAdapter.update(mCategoryPropertyList);
                     }
+                    HandlerUtil.sendmsg(mHandler,null,1);
                 }
-                HandlerUtil.sendmsg(mHandler,null,1);
             }
         });
     }
@@ -396,26 +398,28 @@ public class MusicFragment extends AttachFragment {
 
                 Gson gson = new Gson();
                 mDianBoRecommendModel = gson.fromJson(response, DianBoRecommendModel.class);
-                mViewContent.removeView(mLoadView);
-                for(DianBoRecommendModel.DataBean mdata:mDianBoRecommendModel.getData()){
-                    mMusicRecommendAdapter = new MusicListAdapter(null);
-                    mRecommendList = new ArrayList<>();
-                    mLoodModelList.clear();
-                    for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
-                        if(mRecommend.getDetail().getType().equals("program_ondemand")){
-                            mRecommendList .add(mRecommend);
-                            mLoodModel = new LoodModel();
-                            mLoodModel.setThumb(mRecommend.getThumb());
-                            mLoodModel.setId(mRecommend.getParent_info().getParent_id());
-                            mLoodModelList.add(mLoodModel);
+                if(mDianBoRecommendModel.getErrorno() == 0){
+                    mViewContent.removeView(mLoadView);
+                    for(DianBoRecommendModel.DataBean mdata:mDianBoRecommendModel.getData()){
+                        mMusicRecommendAdapter = new MusicListAdapter(null);
+                        mRecommendList = new ArrayList<>();
+                        mLoodModelList.clear();
+                        for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
+                            if(mRecommend.getDetail().getType().equals("program_ondemand")){
+                                mRecommendList .add(mRecommend);
+                                mLoodModel = new LoodModel();
+                                mLoodModel.setThumb(mRecommend.getThumb());
+                                mLoodModel.setId(mRecommend.getParent_info().getParent_id());
+                                mLoodModelList.add(mLoodModel);
+                            }
                         }
-                    }
-                    if(mRecommendList.size()>0){
-                        if(mdata.getName().equals("banner")){
-                            mLoodView.updataData(mLoodModelList);
-                        }else{
-                            showPlayingList(mdata.getName(),mMusicRecommendAdapter);
-                            mMusicRecommendAdapter.update(mRecommendList);
+                        if(mRecommendList.size()>0){
+                            if(mdata.getName().equals("banner")){
+                                mLoodView.updataData(mLoodModelList);
+                            }else{
+                                showPlayingList(mdata.getName(),mMusicRecommendAdapter);
+                                mMusicRecommendAdapter.update(mRecommendList);
+                            }
                         }
                     }
                 }
