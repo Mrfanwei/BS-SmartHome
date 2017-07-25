@@ -31,7 +31,6 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
     private String TAG = "SmartLifee/Category";
     private String dbcategoryname;
     private int dbcategoryid;
-    protected String[] titles;
     private boolean isFromCache = true;
     CategoryPropertyModel mCategoryPropertyModel = null;
     MainApplication mApplicatin = null;
@@ -61,22 +60,6 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
         mListFragment = new ArrayList<>();
 
         tabLayout = (TabLayout) findViewById(R.id.tb_layout);
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                Log.d(TAG, "tabLayout onTabSelected =" + tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                Log.d(TAG, "tabLayout onTabReselected =" + tab.getPosition());
-            }
-        });
         dianBoCategoryDirectory();
     }
 
@@ -106,32 +89,33 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
             @Override
             public void onResponse(String response, int id) {
                 int mStatus = 0;
-                Log.d(TAG, "responseffff=" + response);
                 mValues = new ArrayList<>();
                 List<String> mValueName = new ArrayList<>();
                 int i = 0, index = 0;
                 Gson gson = new Gson();
                 mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
-                for (CategoryPropertyModel.DataBean mdata : mCategoryPropertyModel.getData()) {
-                    Log.d(TAG, "onResponse name =" + mdata.getName());
-                    if (mStatus == 0) {
-                        for (CategoryPropertyModel.DataBean.ValuesBean mvalue : mdata.getValues()) {
-                            tabLayout.addTab(tabLayout.newTab().setText(mvalue.getName()));
-                            mListFragment.add(CategoryListFragment.newInstance(mdata.getId(), mvalue.getId(), mvalue.getName()));
-                            mValueName.add(mvalue.getName());
-                            mValues.add(mvalue);
-                            if (mvalue.getName().equals(dbcategoryname)) {
-                                index = i;
+                if(mCategoryPropertyModel.getErrorno() == 0){
+                    for (CategoryPropertyModel.DataBean mdata : mCategoryPropertyModel.getData()) {
+                        Log.d(TAG, "onResponse name =" + mdata.getName());
+                        if (mStatus == 0) {
+                            for (CategoryPropertyModel.DataBean.ValuesBean mvalue : mdata.getValues()) {
+                                tabLayout.addTab(tabLayout.newTab().setText(mvalue.getName()));
+                                mListFragment.add(CategoryListFragment.newInstance(mdata.getId(), mvalue.getId(), mvalue.getName()));
+                                mValueName.add(mvalue.getName());
+                                mValues.add(mvalue);
+                                if (mvalue.getName().equals(dbcategoryname)) {
+                                    index = i;
+                                }
+                                i++;
                             }
-                            i++;
-                        }
 
-                        CategoryDirectoryAdapter mCategoryDirectoryAdapter = new CategoryDirectoryAdapter(getSupportFragmentManager(), mListFragment, mValueName);
-                        mViewPager.setAdapter(mCategoryDirectoryAdapter);
-                        mViewPager.setOffscreenPageLimit(mListFragment.size());
-                        mViewPager.setCurrentItem(index);
-                        tabLayout.setupWithViewPager(mViewPager);
-                        mStatus = 1;
+                            CategoryDirectoryAdapter mCategoryDirectoryAdapter = new CategoryDirectoryAdapter(getSupportFragmentManager(), mListFragment, mValueName);
+                            mViewPager.setAdapter(mCategoryDirectoryAdapter);
+                            mViewPager.setOffscreenPageLimit(mListFragment.size());
+                            mViewPager.setCurrentItem(index);
+                            tabLayout.setupWithViewPager(mViewPager);
+                            mStatus = 1;
+                        }
                     }
                 }
             }
