@@ -113,10 +113,11 @@ public class SearchTabPagerFragment extends AttachFragment {
                             songInfo.setAlbum_id(Integer.toString(mdoc.getParent_id()));
                             songResults.add(songInfo);
 
-//                            SearchAlbumInfo albumInfo = new SearchAlbumInfo();
-//                            albumInfo.setTitle(mdoc.getTitle());
-//                            albumInfo.setAuthor(mdoc.getParent_name());
-//                            albumResults.add(albumInfo);
+                            SearchAlbumInfo albumInfo = new SearchAlbumInfo();
+                            albumInfo.setTitle(mdoc.getTitle());
+                            albumInfo.setAuthor(mdoc.getParent_name());
+                            albumInfo.setPic_small(mdoc.getCover());
+                            albumResults.add(albumInfo);
                         }
                     }
                     mHandler.sendEmptyMessage(0);
