@@ -56,9 +56,43 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
         frameLayout = (FrameLayout) view.findViewById(R.id.loadframe);
         loadview = LayoutInflater.from(mContext).inflate(R.layout.loading, frameLayout, false);
         frameLayout.addView(loadview);
+        loadWordText();
         loadWords();
-
         return view;
+    }
+
+    private void loadWordText(){
+        View view = LayoutInflater.from(mContext).inflate(R.layout.fragment_search_hot_words, frameLayout, false);
+        recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
+        recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+        recyclerView.setHasFixedSize(true);
+        adapter = new RecentSearchAdapter(mContext);
+        adapter.setListenter(SearchHotWordFragment.this);
+        recyclerView.setAdapter(adapter);
+
+        TextView text1 = (TextView) view.findViewById(R.id.text1);
+        TextView text2 = (TextView) view.findViewById(R.id.text2);
+        TextView text3 = (TextView) view.findViewById(R.id.text3);
+        TextView text4 = (TextView) view.findViewById(R.id.text4);
+        TextView text5 = (TextView) view.findViewById(R.id.text5);
+        TextView text6 = (TextView) view.findViewById(R.id.text6);
+        TextView text7 = (TextView) view.findViewById(R.id.text7);
+        TextView text8 = (TextView) view.findViewById(R.id.text8);
+        TextView text9 = (TextView) view.findViewById(R.id.text9);
+        TextView text10 = (TextView) view.findViewById(R.id.text10);
+        views.add(text1);
+        views.add(text2);
+        views.add(text3);
+        views.add(text4);
+        views.add(text5);
+        views.add(text6);
+        views.add(text7);
+        views.add(text8);
+        views.add(text9);
+        views.add(text10);
+
+        frameLayout.removeAllViews();
+        frameLayout.addView(view);
     }
 
     public static int px2dip(Context context, float pxValue) {
@@ -76,42 +110,8 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if ( mContext == null) {
-
                 return;
             }
-
-            View view = LayoutInflater.from(mContext).inflate(R.layout.fragment_search_hot_words, frameLayout, false);
-            recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
-            recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-            recyclerView.setHasFixedSize(true);
-            adapter = new RecentSearchAdapter(mContext);
-            adapter.setListenter(SearchHotWordFragment.this);
-            recyclerView.setAdapter(adapter);
-
-            TextView text1 = (TextView) view.findViewById(R.id.text1);
-            TextView text2 = (TextView) view.findViewById(R.id.text2);
-            TextView text3 = (TextView) view.findViewById(R.id.text3);
-            TextView text4 = (TextView) view.findViewById(R.id.text4);
-            TextView text5 = (TextView) view.findViewById(R.id.text5);
-            TextView text6 = (TextView) view.findViewById(R.id.text6);
-            TextView text7 = (TextView) view.findViewById(R.id.text7);
-            TextView text8 = (TextView) view.findViewById(R.id.text8);
-            TextView text9 = (TextView) view.findViewById(R.id.text9);
-            TextView text10 = (TextView) view.findViewById(R.id.text10);
-            views.add(text1);
-            views.add(text2);
-            views.add(text3);
-            views.add(text4);
-            views.add(text5);
-            views.add(text6);
-            views.add(text7);
-            views.add(text8);
-            views.add(text9);
-            views.add(text10);
-
-
-            frameLayout.removeAllViews();
-            frameLayout.addView(view);
 
             int w = mContext.getResources().getDisplayMetrics().widthPixels;
             int xdistance = -1;
@@ -134,7 +134,6 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
                 }
                 WidgetController.setLayout(views.get(i), xdistance, ydistance);
             }
-
         }
     };
 
@@ -164,92 +163,6 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
                 }
             }
         });
-
-        /*new AsyncTask<Boolean, Void, Boolean>() {
-
-            @Override
-            protected Boolean doInBackground(Boolean... params) {
-                if (NetworkUtils.isConnectInternet(mContext)) {
-                    isFromCache = false;
-                }
-
-                try {
-                    JsonArray jsonArray = HttpUtil.getResposeJsonObject(BMA.Search.hotWord(), mContext, isFromCache).get("result").getAsJsonArray();
-                    for (int i = 0; i < 10; i++) {
-                        texts[i] = jsonArray.get(i).getAsJsonObject().get("word").getAsString();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
-                }
-
-                return true;
-            }
-
-            @Override
-            protected void onPostExecute(Boolean load) {
-                super.onPostExecute(load);
-                if (!load && mContext == null) {
-
-                    return;
-                }
-                View view = LayoutInflater.from(mContext).inflate(R.layout.fragment_search_hot_words, frameLayout, false);
-                recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
-                recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-                recyclerView.setHasFixedSize(true);
-                adapter = new RecentSearchAdapter(mContext);
-                adapter.setListenter(SearchHotWordFragment.this);
-                recyclerView.setAdapter(adapter);
-
-                TextView text1 = (TextView) view.findViewById(R.id.text1);
-                TextView text2 = (TextView) view.findViewById(R.id.text2);
-                TextView text3 = (TextView) view.findViewById(R.id.text3);
-                TextView text4 = (TextView) view.findViewById(R.id.text4);
-                TextView text5 = (TextView) view.findViewById(R.id.text5);
-                TextView text6 = (TextView) view.findViewById(R.id.text6);
-                TextView text7 = (TextView) view.findViewById(R.id.text7);
-                TextView text8 = (TextView) view.findViewById(R.id.text8);
-                TextView text9 = (TextView) view.findViewById(R.id.text9);
-                TextView text10 = (TextView) view.findViewById(R.id.text10);
-                views.add(text1);
-                views.add(text2);
-                views.add(text3);
-                views.add(text4);
-                views.add(text5);
-                views.add(text6);
-                views.add(text7);
-                views.add(text8);
-                views.add(text9);
-                views.add(text10);
-
-
-                frameLayout.removeAllViews();
-                frameLayout.addView(view);
-
-                int w = mContext.getResources().getDisplayMetrics().widthPixels;
-                int xdistance = -1;
-                int ydistance = 0;
-                int distance = dip2px(mContext, 16);
-                for (int i = 0; i < 10; i++) {
-                    views.get(i).setOnClickListener(SearchHotWordFragment.this);
-                    views.get(i).setText(texts[i]);
-                    if (xdistance == -1) {
-                        xdistance = 0;
-                        WidgetController.setLayout(views.get(i), xdistance, ydistance);
-                        continue;
-                    }
-                    xdistance += WidgetController.getWidth(views.get(i - 1)) + distance;
-                    if (xdistance + WidgetController.getWidth(views.get(i)) + distance > w) {
-                        xdistance = -1;
-                        ydistance += 120;
-                        i--;
-                        continue;
-                    }
-                    WidgetController.setLayout(views.get(i), xdistance, ydistance);
-                }
-            }
-        }.execute();*/
-
     }
 
     public void searchWords(SearchWords searchWords) {
