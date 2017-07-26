@@ -29,9 +29,6 @@ import com.smartlife.qintin.widget.DividerItemDecoration;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-/**
- * Created by wm on 2016/5/18.
- */
 public class SearchMusicFragment extends AttachFragment {
 
     private MusicAdapter mAdapter;
@@ -75,13 +72,12 @@ public class SearchMusicFragment extends AttachFragment {
         private ArrayList<SearchSongInfo> mList;
 
         public MusicAdapter(ArrayList<SearchSongInfo> list) {
-//            if (list == null) {
-//                throw new IllegalArgumentException("model Data must not be null");
-//            }
+            if (list == null) {
+                throw new IllegalArgumentException("model Data must not be null");
+            }
             mList = list;
         }
 
-        //更新adpter的数据
         public void updateDataSet(ArrayList<SearchSongInfo> list) {
             this.mList = list;
         }
@@ -94,22 +90,13 @@ public class SearchMusicFragment extends AttachFragment {
             return new ListItemViewHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.fragment_musci_common_item, viewGroup, false));
         }
 
-//        //判断布局类型
-//        @Override
-//        public int getItemViewType(int position) {
-//            return position == FIRST_ITEM ? FIRST_ITEM : ITEM;
-//
-//        }
 
-        //将数据与界面进行绑定
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             SearchSongInfo model = mList.get(position);
             if (holder instanceof ListItemViewHolder) {
-
                 ((ListItemViewHolder) holder).mainTitle.setText(model.getTitle());
-                ((ListItemViewHolder) holder).title.setText(model.getAuthor());
-
+                ((ListItemViewHolder) holder).title.setText(model.getAlbum_title());
             }
         }
 
@@ -117,26 +104,6 @@ public class SearchMusicFragment extends AttachFragment {
         public int getItemCount() {
             return (null != mList ? mList.size() : 0);
         }
-
-
-//        public class CommonItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-//            TextView textView;
-//            ImageView select;
-//
-//            CommonItemViewHolder(View view) {
-//                super(view);
-//                this.textView = (TextView) view.findViewById(R.id.play_all_number);
-//                this.select = (ImageView) view.findViewById(R.id.select);
-//                view.setOnClickListener(this);
-//            }
-//
-//            public void onClick(View v) {
-//
-//
-//            }
-//
-//        }
-
 
         public class ListItemViewHolder extends RecyclerView.ViewHolder {
             //ViewHolder
@@ -192,12 +159,12 @@ public class SearchMusicFragment extends AttachFragment {
 
                                 musicInfo.songId = Integer.parseInt(model.getSong_id());
                                 musicInfo.musicName = model.getTitle();
-                                musicInfo.artist = model.getAuthor();
+//                                musicInfo.artist = model.getAuthor();
                                 musicInfo.islocal = false;
                                 musicInfo.albumName = model.getAlbum_title();
                                 musicInfo.albumId = Integer.parseInt(model.getAlbum_id());
-                                musicInfo.artistId = Integer.parseInt(model.getArtist_id());
-                                musicInfo.lrc = model.getLrclink();
+//                                musicInfo.artistId = Integer.parseInt(model.getArtist_id());
+//                                musicInfo.lrc = model.getLrclink();
 
                                 HashMap<Long, MusicInfo> infos = new HashMap<Long, MusicInfo>();
                                 long[] list = new long[1];
@@ -209,12 +176,9 @@ public class SearchMusicFragment extends AttachFragment {
                         }.execute();
                     }
                 });
-
             }
-
 
         }
     }
-
 
 }

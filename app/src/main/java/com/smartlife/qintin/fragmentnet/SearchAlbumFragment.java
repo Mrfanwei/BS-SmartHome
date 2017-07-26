@@ -75,8 +75,6 @@ public class SearchAlbumFragment extends AttachFragment {
 
             setItemDecoration();
         }
-
-
     }
 
 

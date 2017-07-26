@@ -186,6 +186,28 @@ public class OkRequestEvents {
     }
 
     /**
+     * 搜索点播
+     */
+    public static void searchRadio(String access_token,String name,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/newsearch/"+name+"/type/program_ondemand", callback, params, null);
+    }
+
+    /**
+     * 热门搜索
+     */
+    public static void searchHotWord(String access_token,StringCallback callback) {
+
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("access_token", access_token);
+
+        postImpl("http://api.open.qingting.fm/search/hotkeywords", callback, params, null);
+    }
+
+    /**
      * 取消绑定robot
      * */
     public static void unBindRobot(String phoneid,String robotname,StringCallback callback){

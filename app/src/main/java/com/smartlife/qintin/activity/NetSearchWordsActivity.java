@@ -21,6 +21,7 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -35,7 +36,7 @@ import com.smartlife.qintin.provider.SearchHistory;
 import com.smartlife.utils.CommonUtils;
 
 public class NetSearchWordsActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, View.OnTouchListener, SearchWords {
-
+    private String TAG = "SmartLife/NetSearch";
     private SearchView mSearchView;
     private InputMethodManager mImm;
     private String queryString;
@@ -107,19 +108,18 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
 
     @Override
     public boolean onQueryTextSubmit(final String query) {
-
+        Log.d(TAG,"onQueryTextSubmit query ="+query);
         hideInputManager();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         SearchTabPagerFragment fragment = SearchTabPagerFragment.newInstance(0, query);
         ft.replace(R.id.search_frame, fragment).commitAllowingStateLoss();
-
         return true;
     }
 
 
     @Override
     public boolean onQueryTextChange(final String newText) {
-
+        Log.d(TAG,"onQueryTextChange newText ="+newText);
         if (newText.equals(queryString)) {
             return true;
         }
@@ -168,6 +168,7 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
 
     @Override
     public void onSearch(String t) {
+        Log.d(TAG,"onSearch ="+t);
         mSearchView.setQuery(t, true);
     }
 }
