@@ -16,6 +16,7 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.AlbumsDetailActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.json.SearchAlbumInfo;
 import com.smartlife.qintin.widget.DividerItemDecoration;
 
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * Created by wm on 2016/5/18.
  */
-public class SearchAlbumFragment extends AttachFragment {
+public class SearchAlbumFragment extends BaseFragment {
 
     private LinearLayoutManager layoutManager;
     private List<SearchAlbumInfo> mAlbumList = new ArrayList<>();
@@ -75,6 +76,26 @@ public class SearchAlbumFragment extends AttachFragment {
 
             setItemDecoration();
         }
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
 

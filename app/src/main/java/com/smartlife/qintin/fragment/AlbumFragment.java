@@ -177,6 +177,26 @@ public class AlbumFragment extends BaseFragment {
         }.execute();
     }
 
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
+    }
+
     //异步加载recyclerview界面
     private class loadAlbums extends AsyncTask<String, Void, String> {
 

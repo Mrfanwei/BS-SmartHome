@@ -19,6 +19,7 @@ import com.google.gson.JsonObject;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.RankPlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.json.BillboardInfo;
 import com.smartlife.qintin.net.BMA;
 import com.smartlife.qintin.net.HttpUtil;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 /**
  * Created by wm on 2016/5/14.
  */
-public class RankingFragment extends AttachFragment {
+public class RankingFragment extends BaseFragment {
 
     //新歌榜
     public static int BILLBOARD_NEW_MUSIC = 1;
@@ -70,6 +71,26 @@ public class RankingFragment extends AttachFragment {
                 loadData();
             }
         }
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
     @Nullable

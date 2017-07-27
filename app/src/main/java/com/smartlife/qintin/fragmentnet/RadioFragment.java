@@ -38,6 +38,8 @@ import com.smartlife.qintin.model.ZhiBoCategoryModel;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean.ValuesBean;
 import com.smartlife.qintin.model.ZhiBoRadioList;
+import com.smartlife.qintin.net.NetworkUtils;
+import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
 import com.zhy.http.okhttp.callback.StringCallback;
@@ -65,7 +67,7 @@ public class RadioFragment extends AttachFragment {
     private View mRecommendView;
     private LoodView mLoodView;
     public MainActivity mActivity;
-    private boolean isFirstLoad = true;
+    View mLoadingTargetView;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
@@ -95,6 +97,7 @@ public class RadioFragment extends AttachFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
+        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
         mLoodView = (LoodView) mRecommendView.findViewById(R.id.loop_view);
@@ -106,16 +109,38 @@ public class RadioFragment extends AttachFragment {
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        //if(isVisibleToUser && isFirstLoad){
-        if(isVisibleToUser && isFirstLoad){
-            if(mLoodView != null)
-                mLoodView.requestFocus();
+    protected void onFirstUserVisible() {
+        if(mLoodView != null)
+            mLoodView.requestFocus();
+        toggleShowLoading(true, null);
+        if(NetUtils.isNetworkConnected(mContext)){
             radioCategory();
             radioWeek();
-            isFirstLoad = false;
+        }else{
+            toggleNetworkError(true, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleShowLoading(true, null);
+                    radioCategory();
+                    radioWeek();
+                }
+            });
         }
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return mLoadingTargetView;
     }
 
     private void initReloadAdapter(){

@@ -18,6 +18,7 @@ import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.qintin.downmusic.Down;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.info.MusicInfo;
 import com.smartlife.qintin.json.MusicDetailInfo;
 import com.smartlife.qintin.json.SearchSongInfo;
@@ -29,7 +30,7 @@ import com.smartlife.qintin.widget.DividerItemDecoration;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SearchMusicFragment extends AttachFragment {
+public class SearchMusicFragment extends BaseFragment {
 
     private MusicAdapter mAdapter;
     private ArrayList<SearchSongInfo> songInfos;
@@ -62,6 +63,26 @@ public class SearchMusicFragment extends AttachFragment {
         recyclerView.addItemDecoration(new DividerItemDecoration(mContext, DividerItemDecoration.VERTICAL_LIST));
 
         return view;
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
 

@@ -127,6 +127,26 @@ public class RecommendFragment extends AttachFragment {
         }
     }
 
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
+    }
+
     public void requestData(){
         reloadAdapter();
     }

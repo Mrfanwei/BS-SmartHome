@@ -174,6 +174,26 @@ public class ArtistFragment extends BaseFragment {
         }.execute();
     }
 
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
+    }
+
     //异步加载recyclerview界面
     private class loadArtists extends AsyncTask<String, Void, String> {
 

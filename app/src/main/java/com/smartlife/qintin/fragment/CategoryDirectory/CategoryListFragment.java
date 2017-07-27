@@ -21,8 +21,10 @@ import com.google.gson.Gson;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.CategoryAllRadioModel;
 import com.smartlife.qintin.model.CategoryAllRadioModel.DataBean;
+import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.widget.DividerItemDecoration;
 import com.smartlife.qintin.widget.SwipeRefreshLayout;
 import com.smartlife.utils.ToastUtil;
@@ -33,7 +35,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class CategoryListFragment extends AttachFragment implements SwipeRefreshLayout.OnPushLoadMoreListener, SwipeRefreshLayout.OnPullRefreshListener {
+public class CategoryListFragment extends BaseFragment implements SwipeRefreshLayout.OnPushLoadMoreListener, SwipeRefreshLayout.OnPullRefreshListener {
 
     private static final String TAG = "SmartLifee/ListFr";
     private static final String DATA_ID = "data_id";
@@ -46,13 +48,15 @@ public class CategoryListFragment extends AttachFragment implements SwipeRefresh
     private int width = 160, height = 160;
     private int mDataId;
     private int mValueId;
-    private boolean isFirstLoad = true;
     private List<DataBean> adapterList = new ArrayList<>();
     private CategoryAllRadioModel mCategoryAllRadioModel;
     private int totalAlbumCount = 0;
     private int currentpage;
     private boolean noMoreData;
     private OnFragmentInteractionListener mListener;
+    private LayoutInflater mLayoutInflater;
+    private View mLoadView;
+    View mLoadingTargetView;
 
     public interface OnFragmentInteractionListener {
         void startPlaylistActivity(CategoryAllRadioModel.DataBean bean);
@@ -91,7 +95,10 @@ public class CategoryListFragment extends AttachFragment implements SwipeRefresh
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_list, container, false);
+        mLayoutInflater = LayoutInflater.from(mContext);
+        View view = mLayoutInflater.inflate(R.layout.fragment_list, container, false);
+        mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
+        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.list_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.setHasFixedSize(true);
@@ -105,12 +112,34 @@ public class CategoryListFragment extends AttachFragment implements SwipeRefresh
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser && isFirstLoad) {
+    protected void onFirstUserVisible() {
+        toggleShowLoading(true, null);
+        if(NetworkUtils.isConnectWifi(mContext)){
             dianBoCategoryList(currentpage);
-            isFirstLoad = false;
+        }else{
+            toggleNetworkError(true, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleShowLoading(true, null);
+                    dianBoCategoryList(currentpage);
+                }
+            });
         }
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return mLoadingTargetView;
     }
 
     class PlaylistDetailAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

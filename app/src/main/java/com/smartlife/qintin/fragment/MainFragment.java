@@ -47,6 +47,7 @@ public class MainFragment extends BaseFragment {
     private List<MainFragmentItem> mList = new ArrayList<>();
     private PlaylistInfo playlistInfo; //playlist 管理类
     private SwipeRefreshLayout swipeRefresh; //下拉刷新layout
+    View mLoadingTargetView;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -92,13 +93,24 @@ public class MainFragment extends BaseFragment {
         return view;
     }
 
+    @Override
+    protected void onFirstUserVisible() {
+        reloadAdapter();
+    }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            reloadAdapter();
-        }
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
     private void setInfo(String title, int count, int id, int i) {

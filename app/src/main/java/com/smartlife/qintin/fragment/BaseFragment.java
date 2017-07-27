@@ -4,22 +4,17 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.view.View;
 
 import com.smartlife.qintin.activity.BaseActivity;
 import com.smartlife.qintin.activity.MusicStateListener;
+import com.smartlife.qintin.view.base.BaseView;
 
 /**
  * Created by wm on 2016/3/17.
  */
-public class BaseFragment extends Fragment implements MusicStateListener {
+public abstract class BaseFragment extends AttachFragment implements MusicStateListener,BaseView {
 
-    public Activity mContext;
-
-    @Override
-    public void onAttach(Activity activity){
-        super.onAttach(activity);
-        this.mContext = activity;
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,4 +60,30 @@ public class BaseFragment extends Fragment implements MusicStateListener {
     public void reloadAdapter() {
 
     }
+
+    @Override
+    public void showLoading(String msg) {
+        toggleShowLoading(true, null);
+    }
+
+    @Override
+    public void hideLoading() {
+        toggleShowLoading(false, null);
+    }
+
+    @Override
+    public void showError(String msg) {
+        toggleShowError(true, msg, null);
+    }
+
+    @Override
+    public void showException(String msg) {
+        toggleShowError(true, msg, null);
+    }
+
+    @Override
+    public void showNetError() {
+        toggleNetworkError(true, null);
+    }
+
 }

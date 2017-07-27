@@ -40,11 +40,14 @@ import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.CategoryPropertyModel;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoRecommendModel;
 import com.smartlife.qintin.model.LoodModel;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean;
+import com.smartlife.qintin.net.NetworkUtils;
+import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
 import com.smartlife.utils.HandlerUtil;
@@ -57,7 +60,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class MusicFragment extends AttachFragment {
+public class MusicFragment extends BaseFragment {
 
     private String TAG = "SmartLife/RadioFrag";
     private int width = 160, height = 160;
@@ -80,9 +83,15 @@ public class MusicFragment extends AttachFragment {
     private List<CategoryPropertyModel.DataBean> mDataBean;
     MusicListAdapter mMusicRecommendAdapter;
     private OnFragmentInteractionListener mListener;
+    View mLoadingTargetView;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return mLoadingTargetView;
     }
 
     public interface OnFragmentInteractionListener {
@@ -132,6 +141,7 @@ public class MusicFragment extends AttachFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
+        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
         mLoodView = (LoodView) mRecommendView.findViewById(R.id.loop_view);
@@ -144,14 +154,31 @@ public class MusicFragment extends AttachFragment {
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser && isFirstLoad){
-            if(mLoodView != null)
-                mLoodView.requestFocus();
+    protected void onFirstUserVisible() {
+        if(mLoodView != null)
+            mLoodView.requestFocus();
+        toggleShowLoading(true, null);
+        if(NetUtils.isNetworkConnected(mContext)){
             dianBoCategoryProgram();
-            isFirstLoad = false;
+        }else{
+            toggleNetworkError(true, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleShowLoading(true, null);
+                    dianBoCategoryProgram();
+                }
+            });
         }
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
     }
 
     @Override

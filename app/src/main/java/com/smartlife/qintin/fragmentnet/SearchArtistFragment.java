@@ -16,6 +16,7 @@ import com.facebook.drawee.view.SimpleDraweeView;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.ArtistDetailActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.json.SearchArtistInfo;
 import com.smartlife.qintin.widget.DividerItemDecoration;
 
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 /**
  * Created by wm on 2016/5/18.
  */
-public class SearchArtistFragment extends AttachFragment {
+public class SearchArtistFragment extends BaseFragment {
 
     private ArrayList<SearchArtistInfo> artistInfos;
     private RecyclerView recyclerView;
@@ -75,6 +76,26 @@ public class SearchArtistFragment extends AttachFragment {
         recyclerView.setAdapter(mAdapter);
         setItemDecoration();
 
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
 

@@ -21,6 +21,7 @@ import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.adapter.RecentSearchAdapter;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.json.SearchSongInfo;
 import com.smartlife.qintin.model.SearchHotWordModel;
 import com.smartlife.qintin.net.BMA;
@@ -35,7 +36,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class SearchHotWordFragment extends AttachFragment implements View.OnClickListener, SearchWords {
+public class SearchHotWordFragment extends BaseFragment implements View.OnClickListener, SearchWords {
     private String TAG = "SmartLife/SearchHot";
     String[] texts = new String[10];
     ArrayList<TextView> views = new ArrayList<>();
@@ -210,5 +211,25 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
     public void onSearch(String t) {
         if (searchWords != null)
             searchWords.onSearch(t);
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 }

@@ -27,6 +27,7 @@ import com.smartlife.MainActivity;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.fragmentnet.ChangeView;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.net.NetworkUtils;
@@ -41,7 +42,7 @@ import java.util.HashMap;
 
 import okhttp3.Call;
 
-public class CategoryDirectoryFragment extends AttachFragment {
+public class CategoryDirectoryFragment extends BaseFragment {
 
     private String TAG = "SmartLifee/SelectF";
     private RecyclerView mRecyclerView1, mRecyclerView2, mRecyclerView3;
@@ -115,12 +116,24 @@ public class CategoryDirectoryFragment extends AttachFragment {
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser){
-            if(mLoodView != null)
+    protected void onFirstUserVisible() {
+        if(mLoodView != null)
             mLoodView.requestFocus();
-        }
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
     public void requestData(){

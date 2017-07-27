@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import com.bilibili.magicasakura.utils.ThemeUtils;
 import com.smartlife.R;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ import java.util.List;
 /**
  * Created by wm on 2016/4/11.
  */
-public class TabNetPagerFragment extends AttachFragment implements ChangeView {
+public class TabNetPagerFragment extends BaseFragment implements ChangeView {
     //PreferencesUtility mPreferences;
     private ViewPager viewPager;
     private int page = 0;
@@ -42,6 +43,26 @@ public class TabNetPagerFragment extends AttachFragment implements ChangeView {
         super.onViewCreated(view, savedInstanceState);
 
         viewPager.setCurrentItem(page);
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
     @Override

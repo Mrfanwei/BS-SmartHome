@@ -367,4 +367,25 @@
 
     <color name="btn_login_normal">#00acff</color>
     <color name="btn_login_pressed">#46678d</color>
+
+    <color name="base_bg">#ffeeeeee</color>
+    <color name="base_msg_color">#ff999999</color>
+
+    <color name="cpb_default_color">#33b5e5</color>
+    <dimen name="cpb_default_stroke_width">4dp</dimen>
+    <integer name="cpb_default_min_sweep_angle">20</integer>
+    <integer name="cpb_default_max_sweep_angle">300</integer>
+    <item name="cpb_default_sweep_speed" format="float" type="string">1</item>
+    <item name="cpb_default_rotation_speed" format="float" type="string">1</item>
+
+    <integer-array name="gplus_colors">
+        <item>@color/gplus_color_1</item>
+        <item>@color/gplus_color_2</item>
+        <item>@color/gplus_color_3</item>
+        <item>@color/gplus_color_4</item>
+    </integer-array>
+    <color name="gplus_color_1">#3e802f</color>
+    <color name="gplus_color_2">#f4b400</color>
+    <color name="gplus_color_3">#427fed</color>
+    <color name="gplus_color_4">#b23424</color>
 </resources>

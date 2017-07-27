@@ -36,9 +36,12 @@ import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.DianBoRecommendModel;
 import com.smartlife.qintin.model.DianBoRecommendModel.DataBean.RecommendsBean;
 import com.smartlife.qintin.model.LoodModel;
+import com.smartlife.qintin.net.NetworkUtils;
+import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
 import com.smartlife.utils.ToastUtil;
@@ -54,9 +57,9 @@ import okhttp3.Call;
 /**
  * Created by wm on 2016/4/9.
  */
-public class SelectFragment extends AttachFragment {
+public class SelectFragment extends BaseFragment {
 
-    private String TAG = "SmartLifee/SelectF";
+    private String TAG = "SmartLifee/SelectFra";
     private RecommendAdapter mAdapter;
     private int width = 160, height = 160;
     private LinearLayout mViewContent;;
@@ -72,9 +75,43 @@ public class SelectFragment extends AttachFragment {
     public MainActivity mActivity;
     private boolean isFirstLoad = true;
     private OnFragmentInteractionListener mListener;
+    View mLoadingTargetView;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+        if(mLoodView != null)
+            mLoodView.requestFocus();
+        toggleShowLoading(true, null);
+        if(NetUtils.isNetworkConnected(mContext)){
+            dianBoCategoryRecommend();
+        }else{
+            toggleNetworkError(true, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleShowLoading(true, null);
+                    dianBoCategoryRecommend();
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return mLoadingTargetView;
     }
 
     public interface OnFragmentInteractionListener {
@@ -121,6 +158,7 @@ public class SelectFragment extends AttachFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
+        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
 
@@ -129,17 +167,6 @@ public class SelectFragment extends AttachFragment {
             mContent.addView(mRecommendView);
         }
         return mContent;
-    }
-
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser && isFirstLoad){
-            if(mLoodView != null)
-                mLoodView.requestFocus();
-            dianBoCategoryRecommend();
-            isFirstLoad = false;
-        }
     }
 
 

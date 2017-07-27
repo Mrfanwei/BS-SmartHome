@@ -29,8 +29,11 @@ import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoModel.DataBean;
+import com.smartlife.qintin.net.NetworkUtils;
+import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
 import com.zhy.http.okhttp.callback.StringCallback;
@@ -42,9 +45,9 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class CategoryFragment extends AttachFragment {
+public class CategoryFragment extends BaseFragment {
 
-    private String TAG = "SmartLifee/SelectF";
+    private String TAG = "SmartLifee/CategoryFra";
     private int width = 160, height = 160;
     private LinearLayout mViewContent;;
     private LayoutInflater mLayoutInflater;
@@ -58,9 +61,9 @@ public class CategoryFragment extends AttachFragment {
     private View mRecommendView;
     private LoodView mLoodView;
     public MainActivity mActivity;
-    private boolean isFirstLoad = true;
     private CategoryFragment.OnFragmentInteractionListener mListener;
     DianBoModel mDianBoModel=null;
+    View mLoadingTargetView;
 
     public void setChanger(ChangeView changer) {
         mChangeView = changer;
@@ -111,6 +114,7 @@ public class CategoryFragment extends AttachFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
+        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
         mLoodView = (LoodView) mRecommendView.findViewById(R.id.loop_view);
@@ -122,14 +126,36 @@ public class CategoryFragment extends AttachFragment {
     }
 
     @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser){
-            if(mLoodView != null && isFirstLoad)
-                mLoodView.requestFocus();
+    protected void onFirstUserVisible() {
+        if(mLoodView != null)
+            mLoodView.requestFocus();
+        toggleShowLoading(true, null);
+        if(NetUtils.isNetworkConnected(mContext)){
             dianBoCategoryRecommend();
-            isFirstLoad = false;
+        }else{
+            toggleNetworkError(true, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleShowLoading(true, null);
+                    dianBoCategoryRecommend();
+                }
+            });
         }
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return mLoadingTargetView;
     }
 
     private void initReloadAdapter(){

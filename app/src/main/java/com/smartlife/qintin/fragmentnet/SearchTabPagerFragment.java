@@ -24,6 +24,7 @@ import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.json.SearchAlbumInfo;
 import com.smartlife.qintin.json.SearchArtistInfo;
 import com.smartlife.qintin.json.SearchSongInfo;
@@ -38,7 +39,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class SearchTabPagerFragment extends AttachFragment {
+public class SearchTabPagerFragment extends BaseFragment {
 
     private ViewPager viewPager;
     private int page = 0;
@@ -126,45 +127,6 @@ public class SearchTabPagerFragment extends AttachFragment {
         });
     }
 
-    private void search1(final String key) {
-        new AsyncTask<Void, Void, Void>() {
-
-            @Override
-            protected Void doInBackground(Void... params) {
-                try {
-
-                    JsonObject jsonObject = HttpUtil.getResposeJsonObject(BMA.Search.searchMerge(key, 1, 10)).get("result").getAsJsonObject();
-                    JsonObject songObject = jsonObject.get("song_info").getAsJsonObject();
-                    JsonArray songArray = songObject.get("song_list").getAsJsonArray();
-                    for (JsonElement o : songArray) {
-                        SearchSongInfo songInfo = MainApplication.gsonInstance().fromJson(o, SearchSongInfo.class);
-                        Log.e("songinfo", songInfo.getTitle());
-                        songResults.add(songInfo);
-                    }
-
-                    JsonObject albumObject = jsonObject.get("album_info").getAsJsonObject();
-                    JsonArray albumArray = albumObject.get("album_list").getAsJsonArray();
-                    for (JsonElement o : albumArray) {
-                        SearchAlbumInfo albumInfo = MainApplication.gsonInstance().fromJson(o, SearchAlbumInfo.class);
-                        albumResults.add(albumInfo);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-
-
-            }
-        }.execute();
-    }
-
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -199,6 +161,26 @@ public class SearchTabPagerFragment extends AttachFragment {
     @Override
     public void onStart() {
         super.onStart();
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
     static class Adapter extends FragmentStatePagerAdapter {

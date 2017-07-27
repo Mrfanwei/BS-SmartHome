@@ -30,6 +30,7 @@ import com.google.gson.JsonObject;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.PlaylistActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.json.GedanInfo;
 import com.smartlife.qintin.net.BMA;
 import com.smartlife.qintin.net.HttpUtil;
@@ -39,7 +40,7 @@ import java.util.ArrayList;
 /**
  * Created by wm on 2016/5/15.
  */
-public class AllPlaylistFragment extends AttachFragment {
+public class AllPlaylistFragment extends BaseFragment {
 
     FrameLayout frameLayout;
     View view;
@@ -94,6 +95,26 @@ public class AllPlaylistFragment extends AttachFragment {
 
             }
         }
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
     class MAsyncTask extends AsyncTask {

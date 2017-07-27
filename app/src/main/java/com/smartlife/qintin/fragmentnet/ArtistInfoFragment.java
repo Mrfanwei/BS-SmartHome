@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.handler.HandlerUtil;
 import com.smartlife.qintin.json.ArtistInfo;
 import com.smartlife.qintin.net.BMA;
@@ -19,7 +20,7 @@ import com.smartlife.qintin.net.HttpUtil;
 /**
  * Created by wm on 2016/8/3.
  */
-public class ArtistInfoFragment extends AttachFragment {
+public class ArtistInfoFragment extends BaseFragment {
     FrameLayout frameLayout;
     private TextView artistInfoView, artistName;
     private String artistid;
@@ -66,6 +67,26 @@ public class ArtistInfoFragment extends AttachFragment {
             loadContent();
         }
         firstCreate = true;
+    }
+
+    @Override
+    protected void onFirstUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserVisible() {
+
+    }
+
+    @Override
+    protected void onUserInvisible() {
+
+    }
+
+    @Override
+    protected View getLoadingTargetView() {
+        return null;
     }
 
     private void loadContent() {
