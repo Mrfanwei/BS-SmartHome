@@ -1044,7 +1044,7 @@ public class MediaService extends Service {
 
     private void openCurrentAndMaybeNext(final boolean play, final boolean openNext) {
         synchronized (this) {
-            if (D) Log.d(TAG, "16open current");
+            if (D) Log.d(TAG, "open current");
             closeCursor();
             stop(false);
             boolean shutdown = false;
@@ -2256,7 +2256,7 @@ public class MediaService extends Service {
             }
 
             mHistory.clear();
-            openCurrentAndNextPlay(true);
+            openCurrentAndNextPlay(false);
             if (oldId != getAudioId()) {
                 notifyChange(META_CHANGED);
             }

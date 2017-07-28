@@ -619,10 +619,13 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if (getAdapterPosition() > 0)
-                            MusicPlayer.playAll(itemInfos,itemlist, getAdapterPosition() - 1, false);
+                        if (getAdapterPosition() > 0){
+                            MusicPlayer.setQueuePosition(getAdapterPosition()-1);
+                            MusicPlayer.playMusic();
+                        }
+//                            MusicPlayer.playAll(itemInfos,itemlist, getAdapterPosition() - 1, false);
                     }
-                }, 10);
+                }, 5);
             }
 
         }
@@ -651,7 +654,6 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             @Override
             public void onResponse(String response, int id) {
                 Log.d(TAG,"response PlayListTask = "+response);
-                int position=0;
                 int count;
                 itemInfos.clear();
                 Gson gson = new Gson();
@@ -685,17 +687,17 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                         musicInfo.albumData = "1";
                         musicInfo.filepath = mData.getMediainfo().getBitrates_url().get(0).getFile_path();
                         musicInfo.url = "http://"+mDomainUrl+"/"+mData.getMediainfo().getBitrates_url().get(0).getFile_path()+"/"+mData.getId()+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
-                        position++;
                         itemInfos.put((long)mData.getId(),musicInfo);
                         adapterList.add(musicInfo);
                     }
                     if(adapterList.size()>0){
                         itemlist = new long[adapterList.size()];
                         for(int i=0;i<adapterList.size();i++){
-                            itemlist[i] = adapterList.get(i).artistId;
+                            itemlist[i] = adapterList.get(i).songId;
                         }
                         mAdapter.updateDataSet(adapterList,count);
                     }
+                    MusicPlayer.musicLoad(itemInfos,itemlist,false);
                     myHandler.sendEmptyMessage(1);
                 }else{
                     ToastUtil.showShort("无数据");

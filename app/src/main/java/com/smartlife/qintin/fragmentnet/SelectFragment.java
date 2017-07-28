@@ -340,4 +340,15 @@ public class SelectFragment extends BaseFragment {
         mViewHashMap.put(title, mView);
         mViewContent.addView(mView);
     }
+
+    @Override
+    public void showError(String msg) {
+        super.showError(msg);
+        toggleShowError(true, msg, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dianBoCategoryRecommend();
+            }
+        });
+    }
 }

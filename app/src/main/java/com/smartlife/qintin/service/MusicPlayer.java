@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.WeakHashMap;
 
 public class MusicPlayer {
-    private static final String TAG1 = "SmartLifee/MusicPlay";
+
     private static final WeakHashMap<Context, ServiceBinder> mConnectionMap;
     private static final long[] sEmptyList;
     public static MediaAidlInterface mService = null;
@@ -408,36 +408,6 @@ public class MusicPlayer {
         return -1;
     }
 
-    public static final int getQueueSize() {
-        try {
-            if (mService != null) {
-                return mService.getQueueSize();
-            } else {
-            }
-        } catch (final RemoteException ignored) {
-        }
-        return 0;
-    }
-
-    public static final int getQueuePosition() {
-        try {
-            if (mService != null) {
-                return mService.getQueuePosition();
-            }
-        } catch (final RemoteException ignored) {
-        }
-        return 0;
-    }
-
-    public static void setQueuePosition(final int position) {
-        if (mService != null) {
-            try {
-                mService.setQueuePosition(position);
-            } catch (final RemoteException ignored) {
-            }
-        }
-    }
-
     public static final int getQueueHistorySize() {
         if (mService != null) {
             try {
@@ -496,6 +466,64 @@ public class MusicPlayer {
             }
         } catch (final RemoteException ignored) {
         }
+    }
+
+    public static final int getQueueSize() {
+        try {
+            if (mService != null) {
+                return mService.getQueueSize();
+            } else {
+            }
+        } catch (final RemoteException ignored) {
+        }
+        return 0;
+    }
+
+    public static final int getQueuePosition() {
+        try {
+            if (mService != null) {
+                return mService.getQueuePosition();
+            }
+        } catch (final RemoteException ignored) {
+        }
+        return 0;
+    }
+
+    public static void setQueuePosition(final int position) {
+        if (mService != null) {
+            try {
+                mService.setQueuePosition(position);
+            } catch (final RemoteException ignored) {
+            }
+        }
+    }
+
+    public static synchronized void musicLoad(final HashMap<Long, MusicInfo> infos, final long[] list,final boolean forceShuffle){
+        int position = 0;
+        if (list == null || list.length == 0 || mService == null) {
+            return;
+        }
+        try {
+            if (forceShuffle) {
+                mService.setShuffleMode(MediaService.SHUFFLE_NORMAL);
+            }
+            mService.open(infos, list, forceShuffle ? -1 : position);
+        } catch (final RemoteException ignored) {
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static synchronized void playMusic(){
+        try {
+            if (mService != null) {
+                if (!mService.isPlaying()) {
+                    mService.play();
+                }
+            }
+        } catch (final Exception ignored) {
+        }
+
     }
 
     public static synchronized void playAll(final HashMap<Long, MusicInfo> infos, final long[] list, int position, final boolean forceShuffle) {
