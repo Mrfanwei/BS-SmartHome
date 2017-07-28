@@ -621,9 +621,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                     public void run() {
                         if (getAdapterPosition() > 0){
                             MusicPlayer.setQueuePosition(getAdapterPosition()-1);
-                            MusicPlayer.playMusic();
                         }
-//                            MusicPlayer.playAll(itemInfos,itemlist, getAdapterPosition() - 1, false);
                     }
                 }, 5);
             }
