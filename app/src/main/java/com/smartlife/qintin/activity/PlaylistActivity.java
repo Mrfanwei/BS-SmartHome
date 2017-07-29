@@ -617,15 +617,15 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             @Override
             public void onClick(View v) {
 
-                mHandler.post(new Runnable() {
+                mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if (getAdapterPosition() > 0){
-                            MusicPlayer.setQueuePosition(getAdapterPosition()-1);
+                        final int position = getAdapterPosition();
+                        if (position > 0){
+                            MusicPlayer.setQueuePosition(position-1);
                         }
                     }
-                });
-
+                },20);
             }
 
         }
@@ -685,7 +685,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                         musicInfo.albumId = playParentId;
                         musicInfo.artistId = mData.getId();
                         musicInfo.lrc = "1";
-                        musicInfo.albumData = "1";
+                        musicInfo.albumData = playThumb;
                         musicInfo.filepath = mData.getMediainfo().getBitrates_url().get(0).getFile_path();
                         musicInfo.url = "http://"+mDomainUrl+"/"+mData.getMediainfo().getBitrates_url().get(0).getFile_path()+"/"+mData.getId()+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
                         itemInfos.put((long)mData.getId(),musicInfo);

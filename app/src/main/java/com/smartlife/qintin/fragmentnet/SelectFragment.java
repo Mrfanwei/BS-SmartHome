@@ -267,6 +267,12 @@ public class SelectFragment extends BaseFragment {
 
             @Override
             public void onResponse(String response, int id) {
+                int count = response.length()/1000;
+                for(int i=0;i<count;i++) {
+                    Log.d(TAG, response.substring(i*1000,i*1000+1000));
+                }
+                Log.d(TAG,response.substring(count*1000,response.length()));
+
                 DianBoRecommendModel mDianBoRecommendModel;
                 List<RecommendsBean> mList;
                 LoodModel mLoodModel;

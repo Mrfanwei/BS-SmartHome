@@ -181,6 +181,7 @@ public class QuickControlsFragment extends BaseFragment {
 
             Uri uri = null;
             try{
+//                uri = Uri.parse(MusicPlayer.getAlbumPath());
                 uri = Uri.parse(MusicPlayer.getAlbumPath());
             }catch (Exception e){
                 e.printStackTrace();
