@@ -361,6 +361,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         intent.putExtra("playlistcount", "11");
         intent.putExtra("recommendsTitle", bean.getTitle());
         intent.putExtra("parent_id",bean.getParent_info().getParent_id());
+        Log.d(TAG,"parentff startPlaylistActivity getParent_id ="+bean.getParent_info().getParent_id());
         Log.d(TAG,"dianBoPlayList parent_id ="+bean.getParent_info().getParent_id());
         if(bean.getParent_info()!=null){
             intent.putExtra("parent_name",bean.getParent_info().getParent_name());

@@ -39,7 +39,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class SearchTabPagerFragment extends BaseFragment {
+public class SearchTabPagerFragment extends AttachFragment {
 
     private ViewPager viewPager;
     private int page = 0;

@@ -1,5 +1,7 @@
 package com.smartlife.http;
 
+import android.util.Log;
+
 import com.smartlife.huanxin.DemoHelper;
 import com.smartlife.utils.Constants;
 import com.zhy.http.okhttp.OkHttpUtils;
@@ -200,7 +202,7 @@ public class OkRequestEvents {
      * 热门搜索
      */
     public static void searchHotWord(String access_token,StringCallback callback) {
-
+        Log.d("","access_token"+access_token);
         HashMap<String, String> params = BaseRequestParams();
         params.put("access_token", access_token);
 

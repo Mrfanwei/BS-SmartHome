@@ -58,7 +58,6 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.add(R.id.search_frame, f);
         ft.commit();
-
         mImm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
     }

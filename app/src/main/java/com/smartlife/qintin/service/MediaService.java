@@ -596,7 +596,7 @@ public class MediaService extends Service {
             }
 
         } else if(SETQUEUE.equals(action)){
-            Log.e(TAG,"12action");
+            Log.e(TAG,"action");
             setQueuePosition(intent.getIntExtra("position",0));
         }
     }
@@ -2275,7 +2275,7 @@ public class MediaService extends Service {
         int status = mAudioManager.requestAudioFocus(mAudioFocusListener,
                 AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
-        if (D) Log.d(TAG, "27Starting playback: audio focus request status = " + status);
+        if (D) Log.d(TAG, "Starting playback: audio focus request status = " + status);
 
         if (status != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             return;
@@ -2698,7 +2698,7 @@ public class MediaService extends Service {
         }
     }
 
-    private static final class MultiPlayer implements MediaPlayer.OnErrorListener,
+    private static final class  MultiPlayer implements MediaPlayer.OnErrorListener,
             MediaPlayer.OnCompletionListener {
 
         private final WeakReference<MediaService> mService;

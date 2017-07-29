@@ -36,7 +36,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class SearchHotWordFragment extends BaseFragment implements View.OnClickListener, SearchWords {
+public class SearchHotWordFragment extends AttachFragment implements View.OnClickListener, SearchWords {
     private String TAG = "SmartLife/SearchHot";
     String[] texts = new String[10];
     ArrayList<TextView> views = new ArrayList<>();

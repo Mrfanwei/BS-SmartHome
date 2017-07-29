@@ -30,7 +30,7 @@ import com.smartlife.qintin.widget.DividerItemDecoration;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SearchMusicFragment extends BaseFragment {
+public class SearchMusicFragment extends AttachFragment {
 
     private MusicAdapter mAdapter;
     private ArrayList<SearchSongInfo> songInfos;

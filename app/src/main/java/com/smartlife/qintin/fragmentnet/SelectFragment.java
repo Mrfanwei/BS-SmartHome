@@ -290,16 +290,15 @@ public class SelectFragment extends BaseFragment {
                             }
                         }
 
-                        if(mdata.getName().equals("banner")){
-                            Log.d(TAG,"banner mLoodModelList="+mLoodModelList.size());
-                            mLoodView.updataData(mLoodModelList);
+                        if(mLoodModelList.size()>0){
+                            if(mdata.getName().equals("banner")){
+                                Log.d(TAG,"banner mLoodModelList="+mLoodModelList.size());
+                                mLoodView.updataData(mLoodModelList);
+                            }
                         }
 
                         if(mList.size() > 2){
-                            if(mdata.getName().equals("banner")){
-                                //Log.d(TAG,"banner mLoodModelList="+mLoodModelList.size());
-                                //mLoodView.updataData(mLoodModelList);
-                            }else{
+                            if(!mdata.getName().equals("banner")){
                                 showList(mdata.getName(),mAdapter);
                                 mAdapter.update(mList);
                             }
