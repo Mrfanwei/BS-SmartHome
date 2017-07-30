@@ -259,7 +259,7 @@ public class MediaService extends Service {
     private ContentObserver mMediaStoreObserver;
     private static Handler mUrlHandler;
     private static Handler mLrcHandler;
-    private MediaPlayerProxy mProxy;
+    //private MediaPlayerProxy mProxy;
     public static final String LRC_PATH = "/remusic/lrc/";
     private long mLastSeekPos = 0;
     private RequestPlayUrl mRequestUrl;
@@ -339,9 +339,9 @@ public class MediaService extends Service {
         super.onCreate();
         mGetUrlThread.start();
         mLrcThread.start();
-        mProxy = new MediaPlayerProxy(this);
-        mProxy.init();
-        mProxy.start();
+//        mProxy = new MediaPlayerProxy(this);
+//        mProxy.init();
+//        mProxy.start();
 
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -919,7 +919,7 @@ public class MediaService extends Service {
                     startProxy();
                     // String urlEn = HttpUtil.urlEncode(url);
                     String urlEn = url;
-                    urlEn = mProxy.getProxyURL(urlEn);
+//                    urlEn = mProxy.getProxyURL(urlEn);
                     mPlayer.setDataSource(urlEn);
                 }
 
@@ -1026,11 +1026,11 @@ public class MediaService extends Service {
     }
 
     private void startProxy() {
-        if (mProxy == null) {
-            mProxy = new MediaPlayerProxy(this);
-            mProxy.init();
-            mProxy.start();
-        }
+//        if (mProxy == null) {
+//            mProxy = new MediaPlayerProxy(this);
+//            mProxy.init();
+//            mProxy.start();
+//        }
     }
 
     private void openCurrentAndNextPlay(boolean play) {
