@@ -29,13 +29,11 @@ import com.smartlife.utils.GsonUtil;
 import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 public class SearchHotWordFragment extends AttachFragment implements View.OnClickListener, SearchWords {
     private String TAG = "SmartLife/SearchHot";
@@ -63,7 +61,7 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
         return view;
     }
 
-    private void loadWordText(){
+    private void loadWordText() {
         View view = LayoutInflater.from(mContext).inflate(R.layout.fragment_search_hot_words, frameLayout, false);
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
@@ -107,11 +105,11 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
         return (int) (dipValue * scale + 0.5f);
     }
 
-    Handler mHandler = new Handler(){
+    Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if ( mContext == null) {
+            if (mContext == null) {
                 return;
             }
 
@@ -146,7 +144,7 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
 
         OkRequestEvents.searchHotWord(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 if (call == null && e == null && id == 0) {
                     // 没有access_token
                     LogUtil.getLog().d("no token");
@@ -167,16 +165,12 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
                         }
                     });
                 } else {
-                    if (response != null) {
-                        try {
-                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
-                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
-                                // Token问题
-                                MainApplication.getInstance().setAccessToken(null);
-                                loadWords();
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                    if (jsonString != null) {
+                        ErrorModel errorModel = GsonUtil.json2Bean(jsonString, ErrorModel.class);
+                        if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                            // Token问题
+                            MainApplication.getInstance().setAccessToken(null);
+                            loadWords();
                         }
                         return;
                     }
@@ -186,12 +180,12 @@ public class SearchHotWordFragment extends AttachFragment implements View.OnClic
 
             @Override
             public void onResponse(String response, int id) {
-                int i=0;
+                int i = 0;
                 SearchHotWordModel mSearchHotWordModel;
                 Gson gson = new Gson();
-                mSearchHotWordModel = gson.fromJson(response,SearchHotWordModel.class);
-                if(mSearchHotWordModel.getErrorno() == 0){
-                    for(SearchHotWordModel.DataBean mdata:mSearchHotWordModel.getData()){
+                mSearchHotWordModel = gson.fromJson(response, SearchHotWordModel.class);
+                if (mSearchHotWordModel.getErrorno() == 0) {
+                    for (SearchHotWordModel.DataBean mdata : mSearchHotWordModel.getData()) {
                         texts[i] = mdata.getName();
                         i++;
                     }

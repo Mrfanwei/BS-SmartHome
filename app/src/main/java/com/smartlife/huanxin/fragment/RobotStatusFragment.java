@@ -194,7 +194,7 @@ public class RobotStatusFragment extends DialogFragment{
     public void unBindRobot(String phoneid,String robotname){
         OkRequestEvents.unBindRobot(phoneid,robotname,new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 Log.d(TAG, "onError");
             }
 
@@ -210,7 +210,7 @@ public class RobotStatusFragment extends DialogFragment{
         list_robots.clear();
         OkRequestEvents.getrobotinfo(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 Log.d(TAG, "onError");
             }
 

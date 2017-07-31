@@ -28,13 +28,11 @@ import com.smartlife.utils.GsonUtil;
 import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 public class SearchTabPagerFragment extends AttachFragment {
 
@@ -57,11 +55,11 @@ public class SearchTabPagerFragment extends AttachFragment {
         return f;
     }
 
-    Handler mHandler = new Handler(){
+    Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case 0:
                     if (mContext == null) {
                         return;
@@ -88,10 +86,10 @@ public class SearchTabPagerFragment extends AttachFragment {
         }
     };
 
-    private void search(final String key){
+    private void search(final String key) {
         OkRequestEvents.searchRadio(key, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 if (call == null && e == null && id == 0) {
                     // 没有access_token
                     LogUtil.getLog().d("no token");
@@ -112,16 +110,12 @@ public class SearchTabPagerFragment extends AttachFragment {
                         }
                     });
                 } else {
-                    if (response != null) {
-                        try {
-                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
-                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
-                                // Token问题
-                                MainApplication.getInstance().setAccessToken(null);
-                                search(key);
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                    if (jsonString != null) {
+                        ErrorModel errorModel = GsonUtil.json2Bean(jsonString, ErrorModel.class);
+                        if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                            // Token问题
+                            MainApplication.getInstance().setAccessToken(null);
+                            search(key);
                         }
                         return;
                     }
@@ -133,13 +127,13 @@ public class SearchTabPagerFragment extends AttachFragment {
             public void onResponse(String response, int id) {
                 DianBoSearchModel mDianBoSearchModel;
                 Gson gson = new Gson();
-                mDianBoSearchModel = gson.fromJson(response,DianBoSearchModel.class);
-                if(mDianBoSearchModel.getErrorno() == 0){
-                    for(DianBoSearchModel.DataBean mdata:mDianBoSearchModel.getData()){
-                        for(DianBoSearchModel.DataBean.DoclistBean.DocsBean mdoc:mdata.getDoclist().getDocs()){
+                mDianBoSearchModel = gson.fromJson(response, DianBoSearchModel.class);
+                if (mDianBoSearchModel.getErrorno() == 0) {
+                    for (DianBoSearchModel.DataBean mdata : mDianBoSearchModel.getData()) {
+                        for (DianBoSearchModel.DataBean.DoclistBean.DocsBean mdoc : mdata.getDoclist().getDocs()) {
 
                             SearchSongInfo songInfo = new SearchSongInfo();
-                            songInfo.setSong_id(Integer.toString((int)mdoc.getId()));
+                            songInfo.setSong_id(Integer.toString((int) mdoc.getId()));
                             songInfo.setTitle(mdoc.getTitle());
                             songInfo.setAlbum_title(mdoc.getParent_name());
                             songInfo.setAlbum_id(Integer.toString(mdoc.getParent_id()));

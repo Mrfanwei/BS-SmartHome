@@ -47,14 +47,12 @@ import com.smartlife.utils.LogUtil;
 import com.smartlife.utils.ToastUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 /**
  * Created by wm on 2016/4/9.
@@ -264,7 +262,7 @@ public class SelectFragment extends BaseFragment {
     private void dianBoCategoryRecommend() {
         OkRequestEvents.dianBoCategoryRecommend(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 if (call == null && e == null && id == 0) {
                     // 没有access_token
                     LogUtil.getLog().d("no token");
@@ -285,16 +283,12 @@ public class SelectFragment extends BaseFragment {
                         }
                     });
                 } else {
-                    if (response != null) {
-                        try {
-                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
-                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
-                                // Token问题
-                                MainApplication.getInstance().setAccessToken(null);
-                                dianBoCategoryRecommend();
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                    if (jsonString != null) {
+                        ErrorModel errorModel = GsonUtil.json2Bean(jsonString, ErrorModel.class);
+                        if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                            // Token问题
+                            MainApplication.getInstance().setAccessToken(null);
+                            dianBoCategoryRecommend();
                         }
                         return;
                     }

@@ -109,20 +109,19 @@ public class OkHttpUtils {
             public void onResponse(final Call call, final Response response) {
                 try {
                     if (call.isCanceled()) {
-                        sendFailResultCallback(call, new IOException("Canceled!"), finalCallback, id, response);
+                        sendFailResultCallback(call, new IOException("Canceled!"), finalCallback, id, null);
                         return;
                     }
 
                     if (!finalCallback.validateReponse(response, id)) {
-                        System.out.println("fujian" + response.body().string());
-                        sendFailResultCallback(call, new IOException("request failed , reponse's code is : " + response.code()), finalCallback, id, response);
+                        sendFailResultCallback(call, new IOException("request failed , reponse's code is : " + response.code()), finalCallback, id, response.body().string());
                         return;
                     }
 
                     Object o = finalCallback.parseNetworkResponse(response, id);
                     sendSuccessResultCallback(o, finalCallback, id);
                 } catch (Exception e) {
-                    sendFailResultCallback(call, e, finalCallback, id, response);
+                    sendFailResultCallback(call, e, finalCallback, id, null);
                 } finally {
                     if (response.body() != null)
                         response.body().close();
@@ -133,14 +132,14 @@ public class OkHttpUtils {
     }
 
 
-    public void sendFailResultCallback(final Call call, final Exception e, final Callback callback, final int id, final Response response) {
+    public void sendFailResultCallback(final Call call, final Exception e, final Callback callback, final int id, final String jsonString) {
         if (callback == null)
             return;
 
         mPlatform.execute(new Runnable() {
             @Override
             public void run() {
-                callback.onError(call, e, id, response);
+                callback.onError(call, e, id, jsonString);
                 callback.onAfter(id);
             }
         });

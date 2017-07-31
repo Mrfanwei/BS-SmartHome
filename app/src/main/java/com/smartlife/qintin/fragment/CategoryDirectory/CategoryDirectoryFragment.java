@@ -40,7 +40,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 public class CategoryDirectoryFragment extends BaseFragment {
 
@@ -297,7 +296,7 @@ public class CategoryDirectoryFragment extends BaseFragment {
                             .build()
                             .execute(new StringCallback() {
                                 @Override
-                                public void onError(Call call, Exception e, int id, Response response) {
+                                public void onError(Call call, Exception e, int id, String jsonString) {
                                     Log.d(TAG,"onError14");
                                 }
 

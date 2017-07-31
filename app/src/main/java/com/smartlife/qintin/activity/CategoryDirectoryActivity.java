@@ -25,12 +25,10 @@ import com.smartlife.utils.GsonUtil;
 import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 public class CategoryDirectoryActivity extends BaseActivity implements CategoryListFragment.OnFragmentInteractionListener {
     private String TAG = "SmartLifee/Category";
@@ -87,7 +85,7 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
     private void dianBoCategoryDirectory() {
         OkRequestEvents.dianBoCategoryDirectory(dbcategoryid, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 if (call == null && e == null && id == 0) {
                     // 没有access_token
                     LogUtil.getLog().d("no token");
@@ -108,16 +106,12 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
                         }
                     });
                 } else {
-                    if (response != null) {
-                        try {
-                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
-                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
-                                // Token问题
-                                MainApplication.getInstance().setAccessToken(null);
-                                dianBoCategoryDirectory();
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                    if (jsonString != null) {
+                        ErrorModel errorModel = GsonUtil.json2Bean(jsonString, ErrorModel.class);
+                        if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                            // Token问题
+                            MainApplication.getInstance().setAccessToken(null);
+                            dianBoCategoryDirectory();
                         }
                         return;
                     }

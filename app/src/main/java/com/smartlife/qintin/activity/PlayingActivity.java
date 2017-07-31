@@ -88,7 +88,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 import static com.smartlife.qintin.service.MusicPlayer.getAlbumPath;
 
@@ -518,7 +517,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
 
         OkRequestEvents.insertMusicData("www", filepath, albumid, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 Log.d(TAG,"onError");
             }
 
@@ -533,7 +532,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
 
         OkRequestEvents.getMusicInfo(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
 
             }
 
@@ -548,7 +547,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
 
         OkRequestEvents.deleteMusicInfo(filepath, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
 
             }
 

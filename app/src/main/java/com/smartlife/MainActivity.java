@@ -54,12 +54,10 @@ import com.smartlife.utils.LogUtil;
 import com.smartlife.xunfei.fragment.SpeechFragment;
 import com.zhy.http.okhttp.callback.StringCallback;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener, MusicFragment.OnFragmentInteractionListener, CategoryFragment.OnFragmentInteractionListener, SelectFragment.OnFragmentInteractionListener {
     public String TAG = "SmartLifee/MainAct";
@@ -121,7 +119,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
 
         OkRequestEvents.qinTinDomainCenter(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 if (call == null && e == null && id == 0) {
                     // 没有access_token
                     LogUtil.getLog().d("no token");
@@ -142,16 +140,13 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
                         }
                     });
                 } else {
-                    if (response != null) {
-                        try {
-                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
-                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
-                                // Token问题
-                                MainApplication.getInstance().setAccessToken(null);
-                                qinTinDomainCenter();
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                    if (jsonString != null) {
+                        ErrorModel errorModel = GsonUtil.json2Bean(jsonString, ErrorModel.class);
+                        if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                            // Token问题
+                            LogUtil.getLog().d("token error");
+                            MainApplication.getInstance().setAccessToken(null);
+                            qinTinDomainCenter();
                         }
                         return;
                     }

@@ -14,7 +14,6 @@ import com.zhy.http.okhttp.callback.StringCallback;
 import java.util.HashMap;
 
 import okhttp3.Call;
-import okhttp3.Response;
 
 import static android.content.ContentValues.TAG;
 
@@ -85,7 +84,7 @@ public class OkRequestEvents {
 
         postImpl("http://api.open.qingting.fm/access?&grant_type=client_credentials", new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id, Response response) {
+            public void onError(Call call, Exception e, int id, String jsonString) {
                 tokenCallBack.onError(e.toString());
             }
 
