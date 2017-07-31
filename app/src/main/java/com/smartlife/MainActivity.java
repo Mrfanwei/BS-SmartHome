@@ -39,7 +39,7 @@ import com.smartlife.qintin.adapter.MenuItemAdapter;
 import com.smartlife.qintin.dialog.CardPickerDialog;
 import com.smartlife.qintin.fragmentnet.CategoryFragment;
 import com.smartlife.qintin.fragmentnet.MusicFragment;
-import com.smartlife.qintin.fragmentnet.RadioFragment;
+import com.smartlife.qintin.fragmentnet.NovelFragment;
 import com.smartlife.qintin.fragmentnet.SelectFragment;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoRecommendModel;
@@ -59,10 +59,11 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener, MusicFragment.OnFragmentInteractionListener, CategoryFragment.OnFragmentInteractionListener, SelectFragment.OnFragmentInteractionListener {
+public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener, MusicFragment.OnFragmentInteractionListener, CategoryFragment.OnFragmentInteractionListener,
+                        SelectFragment.OnFragmentInteractionListener,NovelFragment.OnFragmentInteractionListener {
     public String TAG = "SmartLifee/MainAct";
     private ActionBar ab;
-    private TextView tvSelectionBar, tvCategoryBar, tvRadioBar, tvMusicBar;
+    private TextView tvSelectionBar, tvCategoryBar, tvNovelBar, tvMusicBar;
     private ImageView ivSearchBar;
     private ArrayList<TextView> tabs = new ArrayList<>();
     private DrawerLayout drawerLayout;
@@ -71,7 +72,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     private SplashScreen splashScreen;
     SelectFragment mSelectFragment;
     CategoryFragment mCategoryFragment;
-    RadioFragment mRadioFragment;
+    NovelFragment mNovelFragment;
     MusicFragment mMusicFragment;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -97,7 +98,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     private void initView() {
         tvSelectionBar = (TextView) findViewById(R.id.tv_selection_bar);
         tvCategoryBar = (TextView) findViewById(R.id.tv_category_bar);
-        tvRadioBar = (TextView) findViewById(R.id.tv_radio_bar);
+        tvNovelBar = (TextView) findViewById(R.id.tv_novel_bar);
         tvMusicBar = (TextView) findViewById(R.id.tv_music_bar);
         ivSearchBar = (ImageView) findViewById(R.id.iv_search_bar);
         drawerLayout = (DrawerLayout) findViewById(R.id.fd);
@@ -172,17 +173,17 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         tabs.add(tvSelectionBar);
         tabs.add(tvCategoryBar);
         tabs.add(tvMusicBar);
-        tabs.add(tvRadioBar);
+        tabs.add(tvNovelBar);
         final CustomViewPager customViewPager = (CustomViewPager) findViewById(R.id.main_viewpager);
         mSelectFragment = new SelectFragment();
         mCategoryFragment = new CategoryFragment();
         mMusicFragment = new MusicFragment();
-        mRadioFragment = new RadioFragment();
+        mNovelFragment = new NovelFragment();
         CustomViewPagerAdapter customViewPagerAdapter = new CustomViewPagerAdapter(getSupportFragmentManager());
         customViewPagerAdapter.addFragment(mSelectFragment);
         customViewPagerAdapter.addFragment(mCategoryFragment);
         customViewPagerAdapter.addFragment(mMusicFragment);
-        customViewPagerAdapter.addFragment(mRadioFragment);
+        customViewPagerAdapter.addFragment(mNovelFragment);
         customViewPager.setAdapter(customViewPagerAdapter);
         customViewPager.setOffscreenPageLimit(3);
         customViewPager.setCurrentItem(0);
@@ -223,7 +224,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
                 customViewPager.setCurrentItem(2);
             }
         });
-        tvRadioBar.setOnClickListener(new View.OnClickListener() {
+        tvNovelBar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
