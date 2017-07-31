@@ -1,14 +1,10 @@
 package com.smartlife.qintin.fragmentnet;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -35,36 +31,38 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
+import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
-import com.smartlife.qintin.activity.CategoryDirectoryActivity;
-import com.smartlife.qintin.activity.PlaylistActivity;
-import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.CategoryPropertyModel;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoRecommendModel;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.qintin.model.LoodModel;
-import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
-import com.smartlife.utils.HandlerUtil;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class MusicFragment extends BaseFragment {
 
     private String TAG = "SmartLife/RadioFrag";
     private int width = 160, height = 160;
-    private LinearLayout mViewContent;;
+    private LinearLayout mViewContent;
+    ;
     private LayoutInflater mLayoutInflater;
     private View mLoadView;
     private HashMap<String, View> mViewHashMap;
@@ -79,7 +77,7 @@ public class MusicFragment extends BaseFragment {
     private boolean isFirstLoad = true;
     private int musicalbumid;
     private int musicsectionid;
-    private List<CategoryPropertyModel.DataBean.ValuesBean > mCategoryPropertyList;
+    private List<CategoryPropertyModel.DataBean.ValuesBean> mCategoryPropertyList;
     private List<CategoryPropertyModel.DataBean> mDataBean;
     MusicListAdapter mMusicRecommendAdapter;
     private OnFragmentInteractionListener mListener;
@@ -97,7 +95,7 @@ public class MusicFragment extends BaseFragment {
     public interface OnFragmentInteractionListener {
         void startMusicListActivity(DianBoRecommendModel.DataBean.RecommendsBean bean);
 
-        void startCategoryDirectoryActivity(String musicname,int musicid);
+        void startCategoryDirectoryActivity(String musicname, int musicid);
     }
 
 
@@ -119,18 +117,18 @@ public class MusicFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mActivity = (MainActivity)getActivity();
+        mActivity = (MainActivity) getActivity();
         mContent = (ViewGroup) inflater.inflate(R.layout.fragment_radio_container, container, false);
 
         mLayoutInflater = LayoutInflater.from(mContext);
-        mRecommendView = mLayoutInflater.inflate(R.layout.category,container,false);
+        mRecommendView = mLayoutInflater.inflate(R.layout.category, container, false);
         String date = Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + "";
         mViewContent = (LinearLayout) mRecommendView.findViewById(R.id.category_layout);
-        if(!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)){
+        if (!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)) {
             PreferencesUtility.getInstance(mContext).setCurrentDate(date);
-            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic,container,false);
-            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage) ;
-            RotateAnimation rotateAnimation = new RotateAnimation(0,360, 1, 0.5F, 1, 0.5F );
+            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic, container, false);
+            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage);
+            RotateAnimation rotateAnimation = new RotateAnimation(0, 360, 1, 0.5F, 1, 0.5F);
             rotateAnimation.setDuration(20000L);
             rotateAnimation.setInterpolator(new LinearInterpolator());
             rotateAnimation.setRepeatCount(Animation.INFINITE);
@@ -141,11 +139,11 @@ public class MusicFragment extends BaseFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
-        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
+        mLoadingTargetView = (View) mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
         mLoodView = (LoodView) mRecommendView.findViewById(R.id.loop_view);
-        if(!isDayFirst){
+        if (!isDayFirst) {
             mContent.addView(mRecommendView);
         }
         mCategoryPropertyList = new ArrayList<>();
@@ -155,12 +153,12 @@ public class MusicFragment extends BaseFragment {
 
     @Override
     protected void onFirstUserVisible() {
-        if(mLoodView != null)
+        if (mLoodView != null)
             mLoodView.requestFocus();
         toggleShowLoading(true, null);
-        if(NetUtils.isNetworkConnected(mContext)){
+        if (NetUtils.isNetworkConnected(mContext)) {
             dianBoCategoryProgram();
-        }else{
+        } else {
             toggleNetworkError(true, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -198,7 +196,8 @@ public class MusicFragment extends BaseFragment {
     }
 
     private List<CategoryPropertyModel.DataBean.ValuesBean> mList;
-    private int showCount =8;
+    private int showCount = 8;
+
     class ContentCategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         public ContentCategoryListAdapter(List<CategoryPropertyModel.DataBean.ValuesBean> list) {
@@ -221,24 +220,24 @@ public class MusicFragment extends BaseFragment {
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             final CategoryPropertyModel.DataBean.ValuesBean info = mList.get(position);
 
-            if(showCount == 8 && position ==7){
+            if (showCount == 8 && position == 7) {
                 ((ContentItemView) holder).mtitle.setText("more");
-            }else{
+            } else {
                 ((ContentItemView) holder).mtitle.setText(info.getName());
             }
 
             ((ContentItemView) holder).itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG,"onClick position = "+position);
-                    if(position==7){
-                        showCount=mList.size();
+                    Log.d(TAG, "onClick position = " + position);
+                    if (position == 7) {
+                        showCount = mList.size();
                         notifyDataSetChanged();
-                    }else if(position==mList.size()-1){
-                        showCount=8;
+                    } else if (position == mList.size() - 1) {
+                        showCount = 8;
                         notifyDataSetChanged();
-                    }else {
-                        mListener.startCategoryDirectoryActivity(info.getName(),musicalbumid);
+                    } else {
+                        mListener.startCategoryDirectoryActivity(info.getName(), musicalbumid);
                     }
                 }
             });
@@ -333,23 +332,57 @@ public class MusicFragment extends BaseFragment {
         }
     }
 
-    private void dianBoCategoryProgram(){
-        OkRequestEvents.dianBoCategoryProgram(mApplication.getAccessToken(), new StringCallback(){
+    private void dianBoCategoryProgram() {
+        OkRequestEvents.dianBoCategoryProgram(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianBoCategoryProgram();
+                        }
 
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianBoCategoryProgram();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("dianBoCategoryProgram onError = " + e);
+                }
             }
 
             @Override
             public void onResponse(String response, int id) {
                 DianBoModel mDianBoModel;
                 Gson gson = new Gson();
-                mDianBoModel = gson.fromJson(response,DianBoModel.class);
-                if(mDianBoModel.getErrorno() == 0){
+                mDianBoModel = gson.fromJson(response, DianBoModel.class);
+                if (mDianBoModel.getErrorno() == 0) {
                     mViewContent.removeView(mLoadView);
-                    for(DianBoModel.DataBean mData : mDianBoModel.getData()){
-                        if(mData.getName().equals("音乐")){
-                            musicalbumid=mData.getId();
+                    for (DianBoModel.DataBean mData : mDianBoModel.getData()) {
+                        if (mData.getName().equals("音乐")) {
+                            musicalbumid = mData.getId();
                             musicsectionid = mData.getSection_id();
                             dianBoMusicAlbum();
                         }
@@ -359,11 +392,45 @@ public class MusicFragment extends BaseFragment {
         });
     }
 
-    private void dianBoMusicAlbum(){
-        OkRequestEvents.dianBoMusicAlbum(mApplication.getAccessToken(),musicalbumid,new StringCallback(){
+    private void dianBoMusicAlbum() {
+        OkRequestEvents.dianBoMusicAlbum(musicalbumid, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianBoMusicAlbum();
+                        }
 
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianBoMusicAlbum();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
+                }
             }
 
             @Override
@@ -373,17 +440,17 @@ public class MusicFragment extends BaseFragment {
 
                 Gson gson = new Gson();
                 mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
-                if(mCategoryPropertyModel.getErrorno() == 0){
+                if (mCategoryPropertyModel.getErrorno() == 0) {
                     mViewContent.removeView(mLoadView);
-                    for(CategoryPropertyModel.DataBean mdata:mCategoryPropertyModel.getData()){
-                        if(mdata.getName().equals("内容")){
-                            for(CategoryPropertyModel.DataBean.ValuesBean mvalue:mdata.getValues()){
+                    for (CategoryPropertyModel.DataBean mdata : mCategoryPropertyModel.getData()) {
+                        if (mdata.getName().equals("内容")) {
+                            for (CategoryPropertyModel.DataBean.ValuesBean mvalue : mdata.getValues()) {
                                 mCategoryPropertyList.add(mvalue);
                             }
                             CategoryPropertyModel.DataBean.ValuesBean mValuesBean = new CategoryPropertyModel.DataBean.ValuesBean();
                             mValuesBean.setName("more");
                             mCategoryPropertyList.add(mValuesBean);
-                            showContentCategoryList(mdata.getName(),mAdapter);
+                            showContentCategoryList(mdata.getName(), mAdapter);
                             mAdapter.update(mCategoryPropertyList);
                         }
                     }
@@ -393,11 +460,45 @@ public class MusicFragment extends BaseFragment {
         });
     }
 
-    private void dianboMusic(){
-        OkRequestEvents.dianBoMusic(mApplication.getAccessToken(),musicsectionid,new StringCallback(){
+    private void dianboMusic() {
+        OkRequestEvents.dianBoMusic(musicsectionid, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianboMusic();
+                        }
 
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianboMusic();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
+                }
             }
 
             @Override
@@ -409,26 +510,26 @@ public class MusicFragment extends BaseFragment {
 
                 Gson gson = new Gson();
                 mDianBoRecommendModel = gson.fromJson(response, DianBoRecommendModel.class);
-                if(mDianBoRecommendModel.getErrorno() == 0){
+                if (mDianBoRecommendModel.getErrorno() == 0) {
                     mViewContent.removeView(mLoadView);
-                    for(DianBoRecommendModel.DataBean mdata:mDianBoRecommendModel.getData()){
+                    for (DianBoRecommendModel.DataBean mdata : mDianBoRecommendModel.getData()) {
                         mMusicRecommendAdapter = new MusicListAdapter(null);
                         mRecommendList = new ArrayList<>();
                         mLoodModelList.clear();
-                        for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
-                            if(mRecommend.getDetail().getType().equals("program_ondemand")){
-                                mRecommendList .add(mRecommend);
+                        for (DianBoRecommendModel.DataBean.RecommendsBean mRecommend : mdata.getRecommends()) {
+                            if (mRecommend.getDetail().getType().equals("program_ondemand")) {
+                                mRecommendList.add(mRecommend);
                                 mLoodModel = new LoodModel();
                                 mLoodModel.setThumb(mRecommend.getThumb());
                                 mLoodModel.setId(mRecommend.getParent_info().getParent_id());
                                 mLoodModelList.add(mLoodModel);
                             }
                         }
-                        if(mRecommendList.size()>0){
-                            if(mdata.getName().equals("banner")){
+                        if (mRecommendList.size() > 0) {
+                            if (mdata.getName().equals("banner")) {
                                 mLoodView.updataData(mLoodModelList);
-                            }else{
-                                showPlayingList(mdata.getName(),mMusicRecommendAdapter);
+                            } else {
+                                showPlayingList(mdata.getName(), mMusicRecommendAdapter);
                                 mMusicRecommendAdapter.update(mRecommendList);
                             }
                         }
@@ -438,18 +539,18 @@ public class MusicFragment extends BaseFragment {
         });
     }
 
-    public void showPlayingList(String title,MusicListAdapter adapter){
+    public void showPlayingList(String title, MusicListAdapter adapter) {
         RecyclerView mRecyclerView;
         GridLayoutManager mGridLayoutManager;
         View mView;
-        if(mViewHashMap.containsKey(title)){
+        if (mViewHashMap.containsKey(title)) {
             mViewContent.removeView(mViewHashMap.get(title));
         }
 
         mView = mLayoutInflater.inflate(R.layout.select_list, mViewContent, false);
         mRecyclerView = (RecyclerView) mView.findViewById(R.id.banner_recyclerview);
-        ((TextView)mView.findViewById(R.id.tv_banner1)).setText(title);
-        mGridLayoutManager = new GridLayoutManager(mContext, 3, LinearLayoutManager.HORIZONTAL,false);
+        ((TextView) mView.findViewById(R.id.tv_banner1)).setText(title);
+        mGridLayoutManager = new GridLayoutManager(mContext, 3, LinearLayoutManager.HORIZONTAL, false);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setHasFixedSize(true);
@@ -457,12 +558,12 @@ public class MusicFragment extends BaseFragment {
         mViewContent.addView(mView);
     }
 
-    public void showContentCategoryList(String title,ContentCategoryListAdapter adapter){
+    public void showContentCategoryList(String title, ContentCategoryListAdapter adapter) {
 
         RecyclerView mRecyclerView;
         GridLayoutManager mGridLayoutManager;
         View mView;
-        if(mViewHashMap.containsKey(title)){
+        if (mViewHashMap.containsKey(title)) {
             mViewContent.removeView(mViewHashMap.get(title));
         }
         mView = mLayoutInflater.inflate(R.layout.category_list, mViewContent, false);

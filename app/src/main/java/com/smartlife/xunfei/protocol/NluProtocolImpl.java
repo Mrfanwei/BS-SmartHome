@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
 import com.google.gson.Gson;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
@@ -28,13 +29,17 @@ import com.smartlife.xunfei.model.SmartHomeAirObjModel;
 import com.smartlife.xunfei.model.SmartHomeModel;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import okhttp3.Call;
+import okhttp3.Response;
 
 /**
  * Created by Administrator on 2017/6/27.
@@ -274,7 +279,7 @@ public class NluProtocolImpl{
                 .build()
                 .execute(new StringCallback() {
                     @Override
-                    public void onError(Call call, Exception e, int id) {
+                    public void onError(Call call, Exception e, int id, Response response) {
                         Log.d(TAG,"onError");
                     }
 

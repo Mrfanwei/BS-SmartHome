@@ -35,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.bilibili.magicasakura.widgets.TintImageView;
 import com.facebook.binaryresource.BinaryResource;
 import com.facebook.binaryresource.FileBinaryResource;
@@ -51,38 +52,43 @@ import com.nineoldandroids.view.ViewHelper;
 import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.dialog.LoadAllDownInfos;
 import com.smartlife.qintin.fragment.MoreFragment;
 import com.smartlife.qintin.fragment.NetMoreFragment;
 import com.smartlife.qintin.handler.HandlerUtil;
 import com.smartlife.qintin.info.MusicInfo;
-import com.smartlife.qintin.model.DianBoProgram;
 import com.smartlife.qintin.json.MusicDetailInfo;
+import com.smartlife.qintin.model.DianBoProgram;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.provider.PlaylistInfo;
 import com.smartlife.qintin.provider.PlaylistsManager;
 import com.smartlife.qintin.service.MusicPlayer;
-import com.smartlife.qintin.widget.SwipeRefreshLayout;
-import com.smartlife.utils.CommonUtils;
 import com.smartlife.qintin.uitl.IConstants;
 import com.smartlife.qintin.uitl.ImageUtils;
 import com.smartlife.qintin.uitl.L;
 import com.smartlife.qintin.widget.DividerItemDecoration;
+import com.smartlife.qintin.widget.SwipeRefreshLayout;
+import com.smartlife.utils.CommonUtils;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.smartlife.utils.ToastUtil;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
-public class PlaylistActivity extends BaseActivity implements ObservableScrollViewCallbacks,SwipeRefreshLayout.OnPushLoadMoreListener, SwipeRefreshLayout.OnPullRefreshListener {
+public class PlaylistActivity extends BaseActivity implements ObservableScrollViewCallbacks, SwipeRefreshLayout.OnPushLoadMoreListener, SwipeRefreshLayout.OnPullRefreshListener {
     private String TAG = "SmartLifee/Playlist";
     private String playlsitId;
-    private int playParentId,playRecommendsSequence,playDetailDuration;
-    private String playParentName,playThumb,playRecommendsTitle,playDetailTitle;
+    private int playParentId, playRecommendsSequence, playDetailDuration;
+    private String playParentName, playThumb, playRecommendsTitle, playDetailTitle;
     private ArrayList<DianBoProgram.DataBean> mList = new ArrayList<>();
     private ArrayList<MusicInfo> adapterList = new ArrayList<>();
     private SimpleDraweeView albumArtSmall;
@@ -118,28 +124,28 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
     private boolean noMoreData;
     private SwipeRefreshLayout mSpList;
 
-    private DianBoProgram mDianBoProgramModel=null;
-    MainApplication mApplicatin=null;
+    private DianBoProgram mDianBoProgramModel = null;
+    MainApplication mApplicatin = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        mApplicatin = (MainApplication)getApplication();
+        mApplicatin = (MainApplication) getApplication();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        currentpage =1;
+        currentpage = 1;
         noMoreData = false;
         adapterList.clear();
         if (getIntent().getExtras() != null) {
             isLocalPlaylist = false;
             playlsitId = getIntent().getStringExtra("playlistid");
-            playParentId = getIntent().getIntExtra("parent_id",-1);
+            playParentId = getIntent().getIntExtra("parent_id", -1);
             playParentName = getIntent().getStringExtra("parent_name");
             playThumb = getIntent().getStringExtra("thumb");
             playRecommendsTitle = getIntent().getStringExtra("recommendsTitle");
-            playRecommendsSequence = getIntent().getIntExtra("recommendsSequence",-1);
+            playRecommendsSequence = getIntent().getIntExtra("recommendsSequence", -1);
             playDetailTitle = getIntent().getStringExtra("detailTitle");
-            playDetailDuration = getIntent().getIntExtra("detailDuration",-1);
+            playDetailDuration = getIntent().getIntExtra("detailDuration", -1);
         }
         mContext = this;
         setContentView(R.layout.activity_playlist);
@@ -158,7 +164,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
         share = (LinearLayout) findViewById(R.id.playlist_share);
         setUpEverything();
         itemInfos = new HashMap<>();
-        mDomainUrl = ((MainApplication)getApplication()).getDomainUrl();
+        mDomainUrl = ((MainApplication) getApplication()).getDomainUrl();
     }
 
     private void setUpEverything() {
@@ -244,7 +250,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             }
         });
 
-        if(Integer.parseInt(playlsitId) == IConstants.FAV_PLAYLIST){
+        if (Integer.parseInt(playlsitId) == IConstants.FAV_PLAYLIST) {
             favLayout.setVisibility(View.VISIBLE);
         }
     }
@@ -272,7 +278,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
         }
         return headerTranslationY;
     }
-    
+
 
     private void loadAllLists() {
         if (NetworkUtils.isConnectInternet(this)) {
@@ -289,7 +295,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
 
     @Override
     public void updateTrack() {
-       mAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
     }
 
     Runnable showInfo = new Runnable() {
@@ -322,9 +328,9 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
 
     private void setAlbumart() {
         playlistTitleView.setText(playParentName);
-        if(playThumb == null){
+        if (playThumb == null) {
             albumArtSmall.setImageResource(R.drawable.placeholder_disk_210);
-        }else {
+        } else {
             albumArtSmall.setImageURI(Uri.parse(playThumb));
         }
 
@@ -346,7 +352,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             }
 
         } catch (Exception e) {
-              e.printStackTrace();
+            e.printStackTrace();
         }
 
     }
@@ -463,7 +469,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
         final static int ITEM = 1;
         private ArrayList<MusicInfo> arraylist;
         private Activity mContext;
-        private int itemcount=0;
+        private int itemcount = 0;
 
         public PlaylistDetailAdapter(Activity context, ArrayList<MusicInfo> mList) {
             this.arraylist = mList;
@@ -488,7 +494,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
 
         @Override
         public void onBindViewHolder(final RecyclerView.ViewHolder itemHolder, final int i) {
-            int htime=0,mtime=0,stime=0;
+            int htime = 0, mtime = 0, stime = 0;
             if (itemHolder instanceof ItemViewHolder) {
                 final MusicInfo localItem = arraylist.get(i - 1);
 
@@ -505,23 +511,23 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                 ((ItemViewHolder) itemHolder).tvUpdateTime.setText(localItem.updataTime);
                 ((ItemViewHolder) itemHolder).tvPlayCount.setText(localItem.playCount);
 
-                if(localItem.duration>60){
-                    stime = localItem.duration%60;
-                    mtime = localItem.duration/60;
-                    if(mtime>60){
-                        htime = mtime/60;
-                        mtime = mtime%60;
+                if (localItem.duration > 60) {
+                    stime = localItem.duration % 60;
+                    mtime = localItem.duration / 60;
+                    if (mtime > 60) {
+                        htime = mtime / 60;
+                        mtime = mtime % 60;
                     }
-                }else{
+                } else {
                     stime = localItem.duration;
                 }
 
-                if(mtime == 0){
+                if (mtime == 0) {
                     ((ItemViewHolder) itemHolder).tvDuration.setText(Integer.toString(stime));
-                }else if(htime == 0){
-                    ((ItemViewHolder) itemHolder).tvDuration.setText(Integer.toString(mtime) +":" +Integer.toString(stime));
-                }else{
-                    ((ItemViewHolder) itemHolder).tvDuration.setText(Integer.toString(htime) +":" +Integer.toString(mtime) +":" +Integer.toString(stime));
+                } else if (htime == 0) {
+                    ((ItemViewHolder) itemHolder).tvDuration.setText(Integer.toString(mtime) + ":" + Integer.toString(stime));
+                } else {
+                    ((ItemViewHolder) itemHolder).tvDuration.setText(Integer.toString(htime) + ":" + Integer.toString(mtime) + ":" + Integer.toString(stime));
                 }
 
                 ((ItemViewHolder) itemHolder).menu.setOnClickListener(new View.OnClickListener() {
@@ -558,7 +564,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             return arraylist == null ? 0 : arraylist.size() + 1;
         }
 
-        public void updateDataSet(ArrayList<MusicInfo> arraylist,int count) {
+        public void updateDataSet(ArrayList<MusicInfo> arraylist, int count) {
             itemcount = count;
             this.arraylist = arraylist;
             this.notifyDataSetChanged();
@@ -578,28 +584,28 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
             }
 
             public void onClick(View v) {
-             mHandler.postDelayed(new Runnable() {
-                 @Override
-                 public void run() {
-                     HashMap<Long, MusicInfo> infos = new HashMap<Long, MusicInfo>();
-                     int len = arraylist.size();
-                     long[] list = new long[len];
-                     for (int i = 0; i < len; i++) {
-                         MusicInfo info = arraylist.get(i);
-                         list[i] = info.songId;
-                         infos.put(list[i], info);
-                     }
-                     if (getAdapterPosition() > -1)
-                         MusicPlayer.playAll(infos,null, 0, false);
-                 }
-             },70);
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        HashMap<Long, MusicInfo> infos = new HashMap<Long, MusicInfo>();
+                        int len = arraylist.size();
+                        long[] list = new long[len];
+                        for (int i = 0; i < len; i++) {
+                            MusicInfo info = arraylist.get(i);
+                            list[i] = info.songId;
+                            infos.put(list[i], info);
+                        }
+                        if (getAdapterPosition() > -1)
+                            MusicPlayer.playAll(infos, null, 0, false);
+                    }
+                }, 70);
 
             }
 
         }
 
         public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-            protected TextView tvTitle,tvUpdateTime,tvPlayCount,tvDuration;
+            protected TextView tvTitle, tvUpdateTime, tvPlayCount, tvDuration;
             protected ImageView menu;
             TintImageView playState;
 
@@ -607,7 +613,7 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                 super(view);
                 tvTitle = (TextView) view.findViewById(R.id.tv_title);
                 tvUpdateTime = (TextView) view.findViewById(R.id.tv_update_time);
-                tvPlayCount = (TextView)view.findViewById(R.id.tv_play_count);
+                tvPlayCount = (TextView) view.findViewById(R.id.tv_play_count);
                 tvDuration = (TextView) view.findViewById(R.id.tv_duration);
                 this.menu = (ImageView) view.findViewById(R.id.popup_menu);
                 this.playState = (TintImageView) view.findViewById(R.id.play_state);
@@ -621,21 +627,21 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                     @Override
                     public void run() {
                         final int position = getAdapterPosition();
-                        if (position > 0){
-                            MusicPlayer.setQueuePosition(position-1);
+                        if (position > 0) {
+                            MusicPlayer.setQueuePosition(position - 1);
                         }
                     }
-                },20);
+                }, 20);
             }
 
         }
     }
 
-    Handler myHandler = new Handler(){
+    Handler myHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            switch (msg.what){
+            switch (msg.what) {
                 case 1:
                     loadFrameLayout.removeAllViews();
                     recyclerView.setVisibility(View.VISIBLE);
@@ -644,34 +650,69 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
         }
     };
 
-    private void dianBoPlayList(int page){
-        OkRequestEvents.dianBoPlayList(mApplicatin.getAccessToken(), playParentId, page, new StringCallback() {
+    private void dianBoPlayList(int page) {
+        OkRequestEvents.dianBoPlayList(playParentId, page, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
-                Log.d(TAG,"dianBoPlayList onError"+e);
+            public void onError(Call call, Exception e, int id, Response response) {
+                currentpage--;
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianBoPlayList(currentpage);
+                        }
+
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianBoPlayList(currentpage);
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
+                }
             }
 
             @Override
             public void onResponse(String response, int id) {
-                Log.d(TAG,"response PlayListTask = "+response);
+                Log.d(TAG, "response PlayListTask = " + response);
                 int count;
                 itemInfos.clear();
                 Gson gson = new Gson();
-                mDianBoProgramModel = gson.fromJson(response,DianBoProgram.class);
+                mDianBoProgramModel = gson.fromJson(response, DianBoProgram.class);
                 count = mDianBoProgramModel.getTotal();
-                if(mDianBoProgramModel.getErrorno() == 0 && count>0){
-                    if(page*15 < count ){
+                if (mDianBoProgramModel.getErrorno() == 0 && count > 0) {
+                    if (page * 15 < count) {
                         //itemlist = new long[page * 15];
-                    }else{
+                    } else {
                         //itemlist = new long[count];
                         noMoreData = true;
                     }
 
                     mHandler.post(showInfo);
-                    for(DianBoProgram.DataBean mdata:mDianBoProgramModel.getData()){
+                    for (DianBoProgram.DataBean mdata : mDianBoProgramModel.getData()) {
                         mList.add(mdata);
                     }
-                    for(DianBoProgram.DataBean mData:mList){
+                    for (DianBoProgram.DataBean mData : mList) {
                         MusicInfo musicInfo = new MusicInfo();
                         musicInfo.updataTime = mData.getUpdate_time();
                         musicInfo.playCount = mData.getPlaycount();
@@ -686,43 +727,43 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                         musicInfo.lrc = "1";
                         musicInfo.albumData = playThumb;
                         musicInfo.filepath = mData.getMediainfo().getBitrates_url().get(0).getFile_path();
-                        musicInfo.url = "http://"+mDomainUrl+"/"+mData.getMediainfo().getBitrates_url().get(0).getFile_path()+"/"+mData.getId()+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
-                        Log.d(TAG,"musicInfo.url ="+musicInfo.url);
-                        itemInfos.put((long)mData.getId(),musicInfo);
+                        musicInfo.url = "http://" + mDomainUrl + "/" + mData.getMediainfo().getBitrates_url().get(0).getFile_path() + "/" + mData.getId() + ".mp3" + "?" + "deviceid=00002000-6822-8da4-ffff-ffffca74";
+                        Log.d(TAG, "musicInfo.url =" + musicInfo.url);
+                        itemInfos.put((long) mData.getId(), musicInfo);
                         adapterList.add(musicInfo);
                     }
-                    if(adapterList.size()>0){
+                    if (adapterList.size() > 0) {
                         itemlist = new long[adapterList.size()];
-                        for(int i=0;i<adapterList.size();i++){
+                        for (int i = 0; i < adapterList.size(); i++) {
                             itemlist[i] = adapterList.get(i).songId;
                         }
-                        mAdapter.updateDataSet(adapterList,count);
+                        mAdapter.updateDataSet(adapterList, count);
                     }
-                    MusicPlayer.musicLoad(itemInfos,itemlist,false);
+                    MusicPlayer.musicLoad(itemInfos, itemlist, false);
                     myHandler.sendEmptyMessage(1);
-                }else{
+                } else {
                     ToastUtil.showShort("无数据");
                     noMoreData = true;
                 }
 
-//                if (page == 1) {
-//                    mSpList.setRefreshing(false);
-//                } else {
-//                    mSpList.setLoadMore(false);
-//                }
+                //                if (page == 1) {
+                //                    mSpList.setRefreshing(false);
+                //                } else {
+                //                    mSpList.setLoadMore(false);
+                //                }
             }
         });
     }
 
-    class PlayListTask extends AsyncTask<Integer,Integer,Integer> {
+    class PlayListTask extends AsyncTask<Integer, Integer, Integer> {
 
         @Override
         protected Integer doInBackground(Integer... integers) {
-            int result=0;
+            int result = 0;
 
             switch (integers[2]) {
                 case 1:
-                    result =1;
+                    result = 1;
                     String albumart = null;
                     for (MusicInfo info : adapterList) {
                         albumart = info.albumData;

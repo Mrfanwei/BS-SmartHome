@@ -1,9 +1,6 @@
 package com.smartlife.huanxin.fragment;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -32,7 +29,7 @@ import com.google.gson.Gson;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMMessage;
-import com.iflytek.cloud.thirdparty.D;
+import com.smartlife.MainActivity;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
 import com.smartlife.huanxin.DemoHelper;
@@ -40,17 +37,16 @@ import com.smartlife.huanxin.adapter.RobotAdapter;
 import com.smartlife.huanxin.gui.VideoCallActivity;
 import com.smartlife.huanxin.model.RobotModel;
 import com.smartlife.netty.helper.Constants;
-import com.smartlife.MainActivity;
 import com.smartlife.netty.manager.NettyManager;
-import com.smartlife.utils.ThreadPool;
 import com.smartlife.qintin.widget.SwipeRefreshLayout;
 import com.smartlife.utils.ToastUtil;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class RobotStatusFragment extends DialogFragment{
 
@@ -198,7 +194,7 @@ public class RobotStatusFragment extends DialogFragment{
     public void unBindRobot(String phoneid,String robotname){
         OkRequestEvents.unBindRobot(phoneid,robotname,new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
                 Log.d(TAG, "onError");
             }
 
@@ -214,7 +210,7 @@ public class RobotStatusFragment extends DialogFragment{
         list_robots.clear();
         OkRequestEvents.getrobotinfo(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
                 Log.d(TAG, "onError");
             }
 

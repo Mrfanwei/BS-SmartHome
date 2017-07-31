@@ -26,7 +26,6 @@ import com.google.gson.Gson;
 import com.smartlife.MainActivity;
 import com.smartlife.R;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
-import com.smartlife.qintin.fragment.AttachFragment;
 import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.fragmentnet.ChangeView;
 import com.smartlife.qintin.model.DianBoModel;
@@ -41,6 +40,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class CategoryDirectoryFragment extends BaseFragment {
 
@@ -297,7 +297,7 @@ public class CategoryDirectoryFragment extends BaseFragment {
                             .build()
                             .execute(new StringCallback() {
                                 @Override
-                                public void onError(Call call, Exception e, int id) {
+                                public void onError(Call call, Exception e, int id, Response response) {
                                     Log.d(TAG,"onError14");
                                 }
 

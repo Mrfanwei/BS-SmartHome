@@ -1,8 +1,6 @@
 package com.smartlife.qintin.fragmentnet;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -32,27 +30,31 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
+import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
-import com.smartlife.qintin.activity.PlaylistActivity;
-import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.DianBoRecommendModel;
 import com.smartlife.qintin.model.DianBoRecommendModel.DataBean.RecommendsBean;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.qintin.model.LoodModel;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.smartlife.utils.ToastUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 /**
  * Created by wm on 2016/4/9.
@@ -62,7 +64,8 @@ public class SelectFragment extends BaseFragment {
     private String TAG = "SmartLifee/SelectFra";
     private RecommendAdapter mAdapter;
     private int width = 160, height = 160;
-    private LinearLayout mViewContent;;
+    private LinearLayout mViewContent;
+    ;
     private LayoutInflater mLayoutInflater;
     private View mLoadView;
     private HashMap<String, View> mViewHashMap;
@@ -83,12 +86,12 @@ public class SelectFragment extends BaseFragment {
 
     @Override
     protected void onFirstUserVisible() {
-        if(mLoodView != null)
+        if (mLoodView != null)
             mLoodView.requestFocus();
         toggleShowLoading(true, null);
-        if(NetUtils.isNetworkConnected(mContext)){
+        if (NetUtils.isNetworkConnected(mContext)) {
             dianBoCategoryRecommend();
-        }else{
+        } else {
             toggleNetworkError(true, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -136,18 +139,18 @@ public class SelectFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mActivity = (MainActivity)getActivity();
+        mActivity = (MainActivity) getActivity();
         mContent = (ViewGroup) inflater.inflate(R.layout.fragment_recommend_container, container, false);
 
         mLayoutInflater = LayoutInflater.from(mContext);
-        mRecommendView = mLayoutInflater.inflate(R.layout.recommend,container,false);
+        mRecommendView = mLayoutInflater.inflate(R.layout.recommend, container, false);
         String date = Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + "";
         mViewContent = (LinearLayout) mRecommendView.findViewById(R.id.recommend_layout);
-        if(!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)){
+        if (!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)) {
             PreferencesUtility.getInstance(mContext).setCurrentDate(date);
-            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic,container,false);
-            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage) ;
-            RotateAnimation rotateAnimation = new RotateAnimation(0,360, 1, 0.5F, 1, 0.5F );
+            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic, container, false);
+            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage);
+            RotateAnimation rotateAnimation = new RotateAnimation(0, 360, 1, 0.5F, 1, 0.5F);
             rotateAnimation.setDuration(20000L);
             rotateAnimation.setInterpolator(new LinearInterpolator());
             rotateAnimation.setRepeatCount(Animation.INFINITE);
@@ -158,12 +161,12 @@ public class SelectFragment extends BaseFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
-        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
+        mLoadingTargetView = (View) mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
 
         mLoodView = (LoodView) mRecommendView.findViewById(R.id.loop_view);
-        if(!isDayFirst){
+        if (!isDayFirst) {
             mContent.addView(mRecommendView);
         }
         return mContent;
@@ -258,20 +261,54 @@ public class SelectFragment extends BaseFragment {
         }
     }
 
-    private void dianBoCategoryRecommend(){
-        OkRequestEvents.dianBoCategoryRecommend(mApplication.getAccessToken(),new StringCallback(){
+    private void dianBoCategoryRecommend() {
+        OkRequestEvents.dianBoCategoryRecommend(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
-                Log.d(TAG,"onError");
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianBoCategoryRecommend();
+                        }
+
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianBoCategoryRecommend();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("dianBoCategoryRecommend onError = " + e);
+                }
             }
 
             @Override
             public void onResponse(String response, int id) {
-                int count = response.length()/1000;
-                for(int i=0;i<count;i++) {
-                    Log.d(TAG, response.substring(i*1000,i*1000+1000));
+                int count = response.length() / 1000;
+                for (int i = 0; i < count; i++) {
+                    Log.d(TAG, response.substring(i * 1000, i * 1000 + 1000));
                 }
-                Log.d(TAG,response.substring(count*1000,response.length()));
+                Log.d(TAG, response.substring(count * 1000, response.length()));
 
                 DianBoRecommendModel mDianBoRecommendModel;
                 List<RecommendsBean> mList;
@@ -279,16 +316,16 @@ public class SelectFragment extends BaseFragment {
                 List<LoodModel> mLoodModelList = new ArrayList<>();
 
                 Gson gson = new Gson();
-                mDianBoRecommendModel = gson.fromJson(response,DianBoRecommendModel.class);
+                mDianBoRecommendModel = gson.fromJson(response, DianBoRecommendModel.class);
                 mViewContent.removeView(mLoadView);
-                if(mDianBoRecommendModel.getErrorno() == 0){
-                    for(DianBoRecommendModel.DataBean mdata: mDianBoRecommendModel.getData()){
+                if (mDianBoRecommendModel.getErrorno() == 0) {
+                    for (DianBoRecommendModel.DataBean mdata : mDianBoRecommendModel.getData()) {
                         mList = new ArrayList<>();
                         mAdapter = new RecommendAdapter(null);
                         mLoodModelList.clear();
-                        for(DianBoRecommendModel.DataBean.RecommendsBean mRecommend:mdata.getRecommends()){
-                            if(mRecommend.getDetail().getType().equals("program_ondemand")){
-                                mList .add(mRecommend);
+                        for (DianBoRecommendModel.DataBean.RecommendsBean mRecommend : mdata.getRecommends()) {
+                            if (mRecommend.getDetail().getType().equals("program_ondemand")) {
+                                mList.add(mRecommend);
                                 mLoodModel = new LoodModel();
                                 mLoodModel.setThumb(mRecommend.getThumb());
                                 mLoodModel.setId(mRecommend.getParent_info().getParent_id());
@@ -296,21 +333,21 @@ public class SelectFragment extends BaseFragment {
                             }
                         }
 
-                        if(mLoodModelList.size()>0){
-                            if(mdata.getName().equals("banner")){
-                                Log.d(TAG,"banner mLoodModelList="+mLoodModelList.size());
+                        if (mLoodModelList.size() > 0) {
+                            if (mdata.getName().equals("banner")) {
+                                Log.d(TAG, "banner mLoodModelList=" + mLoodModelList.size());
                                 mLoodView.updataData(mLoodModelList);
                             }
                         }
 
-                        if(mList.size() > 2){
-                            if(!mdata.getName().equals("banner")){
-                                showList(mdata.getName(),mAdapter);
+                        if (mList.size() > 2) {
+                            if (!mdata.getName().equals("banner")) {
+                                showList(mdata.getName(), mAdapter);
                                 mAdapter.update(mList);
                             }
                         }
                     }
-                }else{
+                } else {
                     ToastUtil.showShort("无数据");
                 }
 
@@ -318,20 +355,20 @@ public class SelectFragment extends BaseFragment {
         });
     }
 
-    public void showList(String title,RecommendAdapter adapter){
+    public void showList(String title, RecommendAdapter adapter) {
 
         RecyclerView mRecyclerView;
         GridLayoutManager mGridLayoutManager;
         View mView;
 
-        if(mViewHashMap.containsKey(title)){
+        if (mViewHashMap.containsKey(title)) {
             mViewContent.removeView(mViewHashMap.get(title));
         }
 
         mView = mLayoutInflater.inflate(R.layout.select_list, mViewContent, false);
         mRecyclerView = (RecyclerView) mView.findViewById(R.id.banner_recyclerview);
-        ((TextView)mView.findViewById(R.id.tv_banner1)).setText(title);
-        mGridLayoutManager = new GridLayoutManager(mContext, 3, LinearLayoutManager.VERTICAL,false);
+        ((TextView) mView.findViewById(R.id.tv_banner1)).setText(title);
+        mGridLayoutManager = new GridLayoutManager(mContext, 3, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setHasFixedSize(true);
@@ -339,7 +376,7 @@ public class SelectFragment extends BaseFragment {
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               //requestData();
+                //requestData();
             }
         });
         mViewHashMap.put(title, mView);

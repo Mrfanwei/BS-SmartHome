@@ -28,6 +28,7 @@ import com.bilibili.magicasakura.utils.ThemeUtils;
 import com.google.gson.Gson;
 import com.smartlife.dlan.fragment.DlanFragment;
 import com.smartlife.http.OkRequestEvents;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.huanxin.fragment.RobotStatusFragment;
 import com.smartlife.netty.fragment.NettyFragment;
 import com.smartlife.qintin.activity.BaseActivity;
@@ -40,27 +41,27 @@ import com.smartlife.qintin.fragmentnet.CategoryFragment;
 import com.smartlife.qintin.fragmentnet.MusicFragment;
 import com.smartlife.qintin.fragmentnet.RadioFragment;
 import com.smartlife.qintin.fragmentnet.SelectFragment;
-import com.smartlife.qintin.handler.HandlerUtil;
-import com.smartlife.qintin.model.CredentialModel;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoRecommendModel;
 import com.smartlife.qintin.model.DomainCenterModel;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.qintin.service.MusicPlayer;
 import com.smartlife.qintin.uitl.ThemeHelper;
 import com.smartlife.qintin.widget.CustomViewPager;
 import com.smartlife.qintin.widget.SplashScreen;
-import com.smartlife.utils.Constants;
-import com.smartlife.utils.StringUtils;
-import com.smartlife.utils.ToastUtil;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.smartlife.xunfei.fragment.SpeechFragment;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
-public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener,MusicFragment.OnFragmentInteractionListener,CategoryFragment.OnFragmentInteractionListener,SelectFragment.OnFragmentInteractionListener{
+public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener, MusicFragment.OnFragmentInteractionListener, CategoryFragment.OnFragmentInteractionListener, SelectFragment.OnFragmentInteractionListener {
     public String TAG = "SmartLifee/MainAct";
     private ActionBar ab;
     private TextView tvSelectionBar, tvCategoryBar, tvRadioBar, tvMusicBar;
@@ -76,9 +77,9 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     MusicFragment mMusicFragment;
 
     public void onCreate(Bundle savedInstanceState) {
-//        splashScreen = new SplashScreen(this);
-//        splashScreen.show(R.drawable.art_login_bg,
-//                SplashScreen.SLIDE_LEFT);
+        //        splashScreen = new SplashScreen(this);
+        //        splashScreen.show(R.drawable.art_login_bg,
+        //                SplashScreen.SLIDE_LEFT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().setBackgroundDrawableResource(R.color.background_material_light_1);
@@ -86,12 +87,12 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         initView();
         initData();
 
-//        HandlerUtil.getInstance(this).postDelayed(() -> splashScreen.removeSplashScreen(), 3000);
+        //        HandlerUtil.getInstance(this).postDelayed(() -> splashScreen.removeSplashScreen(), 3000);
         // mSelectFragment.requestData();
     }
 
     private void initData() {
-        qinTinCredential();
+        qinTinDomainCenter();
         setUpDrawer();
     }
 
@@ -116,36 +117,46 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         ab.setTitle("");
     }
 
-    private void qinTinCredential() {
+    private void qinTinDomainCenter() {
 
-        OkRequestEvents.qinTinCredential(Constants.QT_CLIENT_ID, Constants.QT_CLIENT_SECRET, new StringCallback() {
+        OkRequestEvents.qinTinDomainCenter(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
-                Log.d(TAG, "onError");
-            }
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            qinTinDomainCenter();
+                        }
 
-            @Override
-            public void onResponse(String response, int id) {
-                Gson gson = new Gson();
-                CredentialModel credentialModel = gson.fromJson(response, CredentialModel.class);
-                Log.d(TAG, credentialModel.toString());
-                String access_token = credentialModel.getAccess_token();
-                if (StringUtils.isNotEmpty(access_token)) {
-                    MainApplication.getInstance().setAccessToken(access_token);
-                    qinTinDomainCenter(access_token);
-                    return;
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                qinTinDomainCenter();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
                 }
-                ToastUtil.showShort("token = null");
-            }
-        });
-    }
-
-    private void qinTinDomainCenter(String access_token) {
-
-        OkRequestEvents.qinTinDomainCenter(access_token, new StringCallback() {
-            @Override
-            public void onError(Call call, Exception e, int id) {
-                Log.d(TAG, "onError");
             }
 
             @Override
@@ -325,14 +336,14 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     @Override
     public void startMusicListActivity(DianBoRecommendModel.DataBean.RecommendsBean bean) {
         Intent intent = new Intent(this, PlaylistActivity.class);
-        intent.putExtra("dbcategoryname",bean.getTitle());
-        intent.putExtra("itemcount",20);
+        intent.putExtra("dbcategoryname", bean.getTitle());
+        intent.putExtra("itemcount", 20);
         intent.putExtra("playlistid", "1");
-        intent.putExtra("recommendsTitle",bean.getTitle());
-        intent.putExtra("parent_id",bean.getParent_info().getParent_id());
-        intent.putExtra("thumb",bean.getThumb());
-        intent.putExtra("detailTitle",bean.getTitle());
-        intent.putExtra("detailDuration",111);
+        intent.putExtra("recommendsTitle", bean.getTitle());
+        intent.putExtra("parent_id", bean.getParent_info().getParent_id());
+        intent.putExtra("thumb", bean.getThumb());
+        intent.putExtra("detailTitle", bean.getTitle());
+        intent.putExtra("detailDuration", 111);
         startActivity(intent);
     }
 
@@ -347,9 +358,9 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     @Override
     public void startCategoryDirectoryActivity(DianBoModel.DataBean bean) {
         Intent intent = new Intent(this, CategoryDirectoryActivity.class);
-        intent.putExtra("dbcategoryname",bean.getName());
-        intent.putExtra("dbcategoryid",bean.getId());
-        intent.putExtra("dbcategorysectionid",bean.getSection_id());
+        intent.putExtra("dbcategoryname", bean.getName());
+        intent.putExtra("dbcategoryid", bean.getId());
+        intent.putExtra("dbcategorysectionid", bean.getSection_id());
         startActivity(intent);
     }
 
@@ -360,21 +371,21 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         intent.putExtra("playlistid", "1");
         intent.putExtra("playlistcount", "11");
         intent.putExtra("recommendsTitle", bean.getTitle());
-        intent.putExtra("parent_id",bean.getParent_info().getParent_id());
-        Log.d(TAG,"parentff startPlaylistActivity getParent_id ="+bean.getParent_info().getParent_id());
-        Log.d(TAG,"dianBoPlayList parent_id ="+bean.getParent_info().getParent_id());
-        if(bean.getParent_info()!=null){
-            intent.putExtra("parent_name",bean.getParent_info().getParent_name());
-        }else{
-            intent.putExtra("parent_name","null");
+        intent.putExtra("parent_id", bean.getParent_info().getParent_id());
+        Log.d(TAG, "parentff startPlaylistActivity getParent_id =" + bean.getParent_info().getParent_id());
+        Log.d(TAG, "dianBoPlayList parent_id =" + bean.getParent_info().getParent_id());
+        if (bean.getParent_info() != null) {
+            intent.putExtra("parent_name", bean.getParent_info().getParent_name());
+        } else {
+            intent.putExtra("parent_name", "null");
 
         }
-        intent.putExtra("thumb",bean.getThumb());
-        intent.putExtra("recommendsSequence",bean.getSequence());
-        intent.putExtra("detailTitle",bean.getDetail().getTitle());
-        intent.putExtra("detailDuration",bean.getDetail().getDuration());
-        if(bean.getDetail().getMediainfo()!=null){
-            intent.putExtra("file_path",bean.getDetail().getMediainfo().getBitrates_url().get(0).getFile_path());
+        intent.putExtra("thumb", bean.getThumb());
+        intent.putExtra("recommendsSequence", bean.getSequence());
+        intent.putExtra("detailTitle", bean.getDetail().getTitle());
+        intent.putExtra("detailDuration", bean.getDetail().getDuration());
+        if (bean.getDetail().getMediainfo() != null) {
+            intent.putExtra("file_path", bean.getDetail().getMediainfo().getBitrates_url().get(0).getFile_path());
         }
 
         startActivity(intent);
@@ -418,7 +429,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        splashScreen.removeSplashScreen();
+        //        splashScreen.removeSplashScreen();
     }
 
     /**

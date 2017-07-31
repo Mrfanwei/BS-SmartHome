@@ -1,8 +1,6 @@
 package com.smartlife.qintin.fragmentnet;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -25,31 +23,36 @@ import android.widget.TextView;
 import com.bilibili.magicasakura.widgets.TintImageView;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
+import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
-import com.smartlife.qintin.activity.CategoryDirectoryActivity;
-import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.DianBoModel;
 import com.smartlife.qintin.model.DianBoModel.DataBean;
-import com.smartlife.qintin.net.NetworkUtils;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class CategoryFragment extends BaseFragment {
 
     private String TAG = "SmartLifee/CategoryFra";
     private int width = 160, height = 160;
-    private LinearLayout mViewContent;;
+    private LinearLayout mViewContent;
+    ;
     private LayoutInflater mLayoutInflater;
     private View mLoadView;
     private HashMap<String, View> mViewHashMap;
@@ -62,7 +65,7 @@ public class CategoryFragment extends BaseFragment {
     private LoodView mLoodView;
     public MainActivity mActivity;
     private CategoryFragment.OnFragmentInteractionListener mListener;
-    DianBoModel mDianBoModel=null;
+    DianBoModel mDianBoModel = null;
     View mLoadingTargetView;
 
     public void setChanger(ChangeView changer) {
@@ -92,18 +95,18 @@ public class CategoryFragment extends BaseFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mActivity = (MainActivity)getActivity();
+        mActivity = (MainActivity) getActivity();
         mContent = (ViewGroup) inflater.inflate(R.layout.fragment_category_container, container, false);
 
         mLayoutInflater = LayoutInflater.from(mContext);
-        mRecommendView = mLayoutInflater.inflate(R.layout.category,container,false);
+        mRecommendView = mLayoutInflater.inflate(R.layout.category, container, false);
         String date = Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + "";
         mViewContent = (LinearLayout) mRecommendView.findViewById(R.id.category_layout);
-        if(!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)){
+        if (!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)) {
             PreferencesUtility.getInstance(mContext).setCurrentDate(date);
-            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic,container,false);
-            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage) ;
-            RotateAnimation rotateAnimation = new RotateAnimation(0,360, 1, 0.5F, 1, 0.5F );
+            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic, container, false);
+            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage);
+            RotateAnimation rotateAnimation = new RotateAnimation(0, 360, 1, 0.5F, 1, 0.5F);
             rotateAnimation.setDuration(20000L);
             rotateAnimation.setInterpolator(new LinearInterpolator());
             rotateAnimation.setRepeatCount(Animation.INFINITE);
@@ -114,11 +117,11 @@ public class CategoryFragment extends BaseFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
-        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
+        mLoadingTargetView = (View) mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
         mLoodView = (LoodView) mRecommendView.findViewById(R.id.loop_view);
-        if(!isDayFirst){
+        if (!isDayFirst) {
             mContent.addView(mRecommendView);
         }
         //initReloadAdapter();
@@ -127,17 +130,17 @@ public class CategoryFragment extends BaseFragment {
 
     @Override
     protected void onFirstUserVisible() {
-        if(mLoodView != null)
+        if (mLoodView != null)
             mLoodView.requestFocus();
         toggleShowLoading(true, null);
-        if(NetUtils.isNetworkConnected(mContext)){
-            dianBoCategoryRecommend();
-        }else{
+        if (NetUtils.isNetworkConnected(mContext)) {
+            dianBoCategoryProgram();
+        } else {
             toggleNetworkError(true, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     toggleShowLoading(true, null);
-                    dianBoCategoryRecommend();
+                    dianBoCategoryProgram();
                 }
             });
         }
@@ -158,10 +161,10 @@ public class CategoryFragment extends BaseFragment {
         return mLoadingTargetView;
     }
 
-    private void initReloadAdapter(){
+    private void initReloadAdapter() {
         mPosition = PreferencesUtility.getInstance(mContext).getItemPosition();
         mViewContent.removeView(mLoadView);
-        if(isDayFirst){
+        if (isDayFirst) {
             mContent.removeAllViews();
             mContent.addView(mRecommendView);
         }
@@ -171,7 +174,7 @@ public class CategoryFragment extends BaseFragment {
     private void addViews() {
         String[] strs = mPosition.split(" ");
         for (int i = 0; i < 6; i++) {
-            Log.d(TAG,"strs ="+strs[i] +" length="+strs.length);
+            Log.d(TAG, "strs =" + strs[i] + " length=" + strs.length);
             mViewContent.addView(mViewHashMap.get(strs[i]));
         }
     }
@@ -216,14 +219,14 @@ public class CategoryFragment extends BaseFragment {
         }
 
         public void update(List<DataBean> list) {
-            Log.d(TAG,"update");
+            Log.d(TAG, "update");
             mList = list;
             notifyDataSetChanged();
         }
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Log.d(TAG,"onCreateViewHolder");
+            Log.d(TAG, "onCreateViewHolder");
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
             ItemView viewholder = new ItemView(layoutInflater.inflate(R.layout.category_playlist_item, parent, false));
             return viewholder;
@@ -231,7 +234,7 @@ public class CategoryFragment extends BaseFragment {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            Log.d(TAG,"onBindViewHolder");
+            Log.d(TAG, "onBindViewHolder");
             final DianBoModel.DataBean info = mList.get(position);
             ((ItemView) holder).mimage.setImageResource(R.drawable.music_icn_local);
             ((ItemView) holder).mtitle.setText(info.getName());
@@ -269,32 +272,66 @@ public class CategoryFragment extends BaseFragment {
         }
     }
 
-    private void dianBoCategoryRecommend(){
-        OkRequestEvents.dianBoCategoryProgram(mApplication.getAccessToken(), new StringCallback() {
+    private void dianBoCategoryProgram() {
+        OkRequestEvents.dianBoCategoryProgram(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
-                Log.d(TAG,"onError");
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianBoCategoryProgram();
+                        }
+
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianBoCategoryProgram();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("dianBoCategoryProgram onError = " + e);
+                }
             }
 
             @Override
             public void onResponse(String response, int id) {
                 List<DataBean> mList = new ArrayList<>();
                 CategoryListAdapter mAdapter = new CategoryListAdapter(null);
-                int count =0;
+                int count = 0;
                 Gson gson = new Gson();
-                mDianBoModel = gson.fromJson(response,DianBoModel.class);
+                mDianBoModel = gson.fromJson(response, DianBoModel.class);
                 mViewContent.removeView(mLoadView);
                 //mViewContent.removeAllViews();
-                for(DataBean mData : mDianBoModel.getData()){
-                    if(count%6 == 0 && count/6!=0){
+                for (DataBean mData : mDianBoModel.getData()) {
+                    if (count % 6 == 0 && count / 6 != 0) {
                         mList = new ArrayList<>();
                         mList.add(mData);
                         mAdapter = new CategoryListAdapter(null);
-                    }else if(count%6 == 5){
+                    } else if (count % 6 == 5) {
                         mList.add(mData);
-                        showList(mData.getName(),mAdapter);
+                        showList(mData.getName(), mAdapter);
                         mAdapter.update(mList);
-                    }else{
+                    } else {
                         mList.add(mData);
                     }
                     count++;
@@ -303,13 +340,13 @@ public class CategoryFragment extends BaseFragment {
         });
     }
 
-    public void showList(String title,CategoryListAdapter adapter){
+    public void showList(String title, CategoryListAdapter adapter) {
 
         RecyclerView mRecyclerView;
         GridLayoutManager mGridLayoutManager;
         View mView;
 
-        if(mViewHashMap.containsKey(title)){
+        if (mViewHashMap.containsKey(title)) {
             mViewContent.removeView(mViewHashMap.get(title));
         }
         mView = mLayoutInflater.inflate(R.layout.category_list, mViewContent, false);

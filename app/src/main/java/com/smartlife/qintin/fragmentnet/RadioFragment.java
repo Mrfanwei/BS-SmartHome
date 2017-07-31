@@ -30,32 +30,39 @@ import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
 import com.smartlife.MainActivity;
+import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.activity.CategoryDirectoryActivity;
 import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.qintin.model.ZhiBoCategoryModel;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean;
 import com.smartlife.qintin.model.ZhiBoCategoryModel.DataBean.ValuesBean;
 import com.smartlife.qintin.model.ZhiBoRadioList;
-import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.uitl.NetUtils;
 import com.smartlife.qintin.uitl.PreferencesUtility;
 import com.smartlife.qintin.widget.LoodView;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class RadioFragment extends AttachFragment {
 
     private String TAG = "SmartLife/RadioFrag";
     private int width = 160, height = 160;
-    private LinearLayout mViewContent;;
+    private LinearLayout mViewContent;
+    ;
     private LayoutInflater mLayoutInflater;
     private View mLoadView;
     private HashMap<String, View> mViewHashMap;
@@ -75,18 +82,18 @@ public class RadioFragment extends AttachFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mActivity = (MainActivity)getActivity();
+        mActivity = (MainActivity) getActivity();
         mContent = (ViewGroup) inflater.inflate(R.layout.fragment_radio_container, container, false);
 
         mLayoutInflater = LayoutInflater.from(mContext);
-        mRecommendView = mLayoutInflater.inflate(R.layout.category,container,false);
+        mRecommendView = mLayoutInflater.inflate(R.layout.category, container, false);
         String date = Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + "";
         mViewContent = (LinearLayout) mRecommendView.findViewById(R.id.category_layout);
-        if(!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)){
+        if (!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)) {
             PreferencesUtility.getInstance(mContext).setCurrentDate(date);
-            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic,container,false);
-            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage) ;
-            RotateAnimation rotateAnimation = new RotateAnimation(0,360, 1, 0.5F, 1, 0.5F );
+            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic, container, false);
+            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage);
+            RotateAnimation rotateAnimation = new RotateAnimation(0, 360, 1, 0.5F, 1, 0.5F);
             rotateAnimation.setDuration(20000L);
             rotateAnimation.setInterpolator(new LinearInterpolator());
             rotateAnimation.setRepeatCount(Animation.INFINITE);
@@ -97,11 +104,11 @@ public class RadioFragment extends AttachFragment {
         }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
-        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
+        mLoadingTargetView = (View) mLoadView.findViewById(R.id.player_loading_view);
         mViewContent.addView(mLoadView);
         mViewHashMap = new HashMap<>();
         mLoodView = (LoodView) mRecommendView.findViewById(R.id.loop_view);
-        if(!isDayFirst){
+        if (!isDayFirst) {
             mContent.addView(mRecommendView);
         }
         //initReloadAdapter();
@@ -110,13 +117,13 @@ public class RadioFragment extends AttachFragment {
 
     @Override
     protected void onFirstUserVisible() {
-        if(mLoodView != null)
+        if (mLoodView != null)
             mLoodView.requestFocus();
         toggleShowLoading(true, null);
-        if(NetUtils.isNetworkConnected(mContext)){
+        if (NetUtils.isNetworkConnected(mContext)) {
             radioCategory();
             radioWeek();
-        }else{
+        } else {
             toggleNetworkError(true, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -143,10 +150,10 @@ public class RadioFragment extends AttachFragment {
         return mLoadingTargetView;
     }
 
-    private void initReloadAdapter(){
+    private void initReloadAdapter() {
         mPosition = PreferencesUtility.getInstance(mContext).getContentItemPosition();
         mViewContent.removeView(mLoadView);
-        if(isDayFirst){
+        if (isDayFirst) {
             mContent.removeAllViews();
             mContent.addView(mRecommendView);
         }
@@ -157,7 +164,7 @@ public class RadioFragment extends AttachFragment {
     private void addViews() {
         String[] strs = mPosition.split(" ");
         for (int i = 0; i < 3; i++) {
-            Log.d(TAG,"strs ="+strs[i]);
+            Log.d(TAG, "strs =" + strs[i]);
             mViewContent.addView(mViewHashMap.get(strs[i]));
         }
     }
@@ -188,7 +195,8 @@ public class RadioFragment extends AttachFragment {
     }
 
     private List<ValuesBean> mList;
-    private int showCount =8;
+    private int showCount = 8;
+
     class ContentCategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         public ContentCategoryListAdapter(List<ValuesBean> list) {
@@ -202,7 +210,7 @@ public class RadioFragment extends AttachFragment {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Log.d(TAG,"onCreateViewHolder");
+            Log.d(TAG, "onCreateViewHolder");
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
             ContentItemView viewholder = new ContentItemView(layoutInflater.inflate(R.layout.radio_playlist_item, parent, false));
             return viewholder;
@@ -212,23 +220,23 @@ public class RadioFragment extends AttachFragment {
         public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
             final ValuesBean info = mList.get(position);
 
-            if(showCount == 8 && position ==7){
+            if (showCount == 8 && position == 7) {
                 ((ContentItemView) holder).mtitle.setText("more");
-            }else{
+            } else {
                 ((ContentItemView) holder).mtitle.setText(info.getName());
             }
 
             ((ContentItemView) holder).itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.d(TAG,"onClick position = "+position);
-                    if(position==7){
-                        showCount=mList.size();
+                    Log.d(TAG, "onClick position = " + position);
+                    if (position == 7) {
+                        showCount = mList.size();
                         notifyDataSetChanged();
-                    }else if(position==mList.size()-1){
-                        showCount=8;
+                    } else if (position == mList.size() - 1) {
+                        showCount = 8;
                         notifyDataSetChanged();
-                    }else {
+                    } else {
                         Intent intent = new Intent(mActivity, CategoryDirectoryActivity.class);
                         intent.putExtra("contentcategoryname", info.getName());
                         intent.putExtra("contentcategoryid", info.getId());
@@ -244,7 +252,7 @@ public class RadioFragment extends AttachFragment {
                 return 0;
             }
 
-            Log.d(TAG,"getItemCount count ="+showCount);
+            Log.d(TAG, "getItemCount count =" + showCount);
             return showCount;
         }
 
@@ -272,14 +280,14 @@ public class RadioFragment extends AttachFragment {
         }
 
         public void update(List<ZhiBoRadioList.DataBean> list) {
-            Log.d(TAG,"update");
+            Log.d(TAG, "update");
             mList = list;
             notifyDataSetChanged();
         }
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Log.d(TAG,"onCreateViewHolder");
+            Log.d(TAG, "onCreateViewHolder");
             LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
             ItemView viewholder = new ItemView(layoutInflater.inflate(R.layout.playing_list_item, parent, false));
             return viewholder;
@@ -288,10 +296,10 @@ public class RadioFragment extends AttachFragment {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
-            Log.d(TAG,"onBindViewHolder");
+            Log.d(TAG, "onBindViewHolder");
             final ZhiBoRadioList.DataBean info = mList.get(position);
 
-            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(info.getThumb() ))
+            ImageRequest request = ImageRequestBuilder.newBuilderWithSource(Uri.parse(info.getThumb()))
                     .setResizeOptions(new ResizeOptions(width, height))
                     .build();
 
@@ -308,8 +316,8 @@ public class RadioFragment extends AttachFragment {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(mActivity, CategoryDirectoryActivity.class);
-                    intent.putExtra("dbcategoryname",info.getDetail().getTitle());
-                    intent.putExtra("dbcategoryid",info.getId());
+                    intent.putExtra("dbcategoryname", info.getDetail().getTitle());
+                    intent.putExtra("dbcategoryid", info.getId());
                     mContext.startActivity(intent);
                 }
             });
@@ -336,11 +344,45 @@ public class RadioFragment extends AttachFragment {
         }
     }
 
-    private void radioCategory(){
-        OkRequestEvents.radioCategory(mApplication.getAccessToken(), new StringCallback() {
+    private void radioCategory() {
+        OkRequestEvents.radioCategory(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            radioCategory();
+                        }
 
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                radioCategory();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
+                }
             }
 
             @Override
@@ -350,17 +392,17 @@ public class RadioFragment extends AttachFragment {
                 ContentCategoryListAdapter mAdapter = new ContentCategoryListAdapter(null);
 
                 Gson gson = new Gson();
-                mZhiBoCategoryModel = gson.fromJson(response,ZhiBoCategoryModel.class);
+                mZhiBoCategoryModel = gson.fromJson(response, ZhiBoCategoryModel.class);
                 mViewContent.removeView(mLoadView);
-                for(DataBean mdata:mZhiBoCategoryModel.getData()){
-                    if(mdata.getName().contains("类型")){
-                        for(ValuesBean mvalue:mdata.getValues()){
+                for (DataBean mdata : mZhiBoCategoryModel.getData()) {
+                    if (mdata.getName().contains("类型")) {
+                        for (ValuesBean mvalue : mdata.getValues()) {
                             mContentCategoryList.add(mvalue);
                         }
                         ValuesBean mValuesBean = new ValuesBean();
                         mValuesBean.setName("more");
                         mContentCategoryList.add(mValuesBean);
-                        showContentCategoryList(mdata.getName(),mAdapter);
+                        showContentCategoryList(mdata.getName(), mAdapter);
                         mAdapter.update(mContentCategoryList);
                     }
                 }
@@ -368,14 +410,48 @@ public class RadioFragment extends AttachFragment {
         });
     }
 
-    private void radioWeek(){
+    private void radioWeek() {
         String mweek;
         final Calendar c = Calendar.getInstance();
         mweek = String.valueOf(c.get(Calendar.DAY_OF_WEEK));
-        OkRequestEvents.radioWeek(mApplication.getAccessToken(), mweek, new StringCallback() {
+        OkRequestEvents.radioWeek(mweek, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            radioWeek();
+                        }
 
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                radioWeek();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
+                }
             }
 
             @Override
@@ -387,20 +463,20 @@ public class RadioFragment extends AttachFragment {
                 Gson gson = new Gson();
                 mZhiBoRadioList = gson.fromJson(response, ZhiBoRadioList.class);
                 mViewContent.removeView(mLoadView);
-                for(ZhiBoRadioList.DataBean mdata:mZhiBoRadioList.getData()){
+                for (ZhiBoRadioList.DataBean mdata : mZhiBoRadioList.getData()) {
                     mPlayingRadioList.add(mdata);
                 }
-                showPlayingList("zhiboplay",mAdapter);
+                showPlayingList("zhiboplay", mAdapter);
                 mAdapter.update(mPlayingRadioList);
             }
         });
     }
 
-    public void showPlayingList(String title,PlayingAdapter adapter){
+    public void showPlayingList(String title, PlayingAdapter adapter) {
         RecyclerView mRecyclerView;
         GridLayoutManager mGridLayoutManager;
         View mView;
-        if(mViewHashMap.containsKey(title)){
+        if (mViewHashMap.containsKey(title)) {
             mViewContent.removeView(mViewHashMap.get(title));
         }
 
@@ -416,12 +492,12 @@ public class RadioFragment extends AttachFragment {
         mViewContent.addView(mView);
     }
 
-    public void showContentCategoryList(String title,ContentCategoryListAdapter adapter){
+    public void showContentCategoryList(String title, ContentCategoryListAdapter adapter) {
 
         RecyclerView mRecyclerView;
         GridLayoutManager mGridLayoutManager;
         View mView;
-        if(mViewHashMap.containsKey(title)){
+        if (mViewHashMap.containsKey(title)) {
             mViewContent.removeView(mViewHashMap.get(title));
         }
         mView = mLayoutInflater.inflate(R.layout.category_list, mViewContent, false);

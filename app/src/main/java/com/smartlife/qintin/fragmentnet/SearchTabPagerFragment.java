@@ -1,6 +1,5 @@
 package com.smartlife.qintin.fragmentnet;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -9,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,27 +15,26 @@ import android.widget.FrameLayout;
 
 import com.bilibili.magicasakura.utils.ThemeUtils;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.fragment.AttachFragment;
-import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.json.SearchAlbumInfo;
-import com.smartlife.qintin.json.SearchArtistInfo;
 import com.smartlife.qintin.json.SearchSongInfo;
 import com.smartlife.qintin.model.DianBoSearchModel;
-import com.smartlife.qintin.net.BMA;
-import com.smartlife.qintin.net.HttpUtil;
+import com.smartlife.qintin.model.ErrorModel;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class SearchTabPagerFragment extends AttachFragment {
 
@@ -92,10 +89,44 @@ public class SearchTabPagerFragment extends AttachFragment {
     };
 
     private void search(final String key){
-        OkRequestEvents.searchRadio(mApplication.getAccessToken(), key, new StringCallback() {
+        OkRequestEvents.searchRadio(key, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            search(key);
+                        }
 
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                search(key);
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
+                }
             }
 
             @Override

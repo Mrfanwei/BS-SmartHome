@@ -76,6 +76,7 @@ import com.smartlife.qintin.uitl.MusicUtils;
 import com.smartlife.qintin.widget.AlbumViewPager;
 import com.smartlife.qintin.widget.PlayerSeekBar;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -85,7 +86,10 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.List;
+
 import okhttp3.Call;
+import okhttp3.Response;
+
 import static com.smartlife.qintin.service.MusicPlayer.getAlbumPath;
 
 public class PlayingActivity extends BaseActivity implements IConstants,INettyView{
@@ -514,7 +518,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
 
         OkRequestEvents.insertMusicData("www", filepath, albumid, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
                 Log.d(TAG,"onError");
             }
 
@@ -529,7 +533,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
 
         OkRequestEvents.getMusicInfo(new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
 
             }
 
@@ -544,7 +548,7 @@ public class PlayingActivity extends BaseActivity implements IConstants,INettyVi
 
         OkRequestEvents.deleteMusicInfo(filepath, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
 
             }
 

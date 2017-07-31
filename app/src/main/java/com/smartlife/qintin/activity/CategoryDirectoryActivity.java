@@ -3,7 +3,6 @@ package com.smartlife.qintin.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
@@ -15,17 +14,23 @@ import com.google.gson.Gson;
 import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.adapter.CategoryDirectoryAdapter;
 import com.smartlife.qintin.fragment.CategoryDirectory.CategoryListFragment;
 import com.smartlife.qintin.model.CategoryAllRadioModel;
 import com.smartlife.qintin.model.CategoryPropertyModel;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.utils.CommonUtils;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class CategoryDirectoryActivity extends BaseActivity implements CategoryListFragment.OnFragmentInteractionListener {
     private String TAG = "SmartLifee/Category";
@@ -80,10 +85,44 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
     }
 
     private void dianBoCategoryDirectory() {
-        OkRequestEvents.dianBoCategoryDirectory(mApplicatin.getAccessToken(), dbcategoryid, new StringCallback() {
+        OkRequestEvents.dianBoCategoryDirectory(dbcategoryid, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
-                Log.d(TAG, "error");
+            public void onError(Call call, Exception e, int id, Response response) {
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianBoCategoryDirectory();
+                        }
+
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianBoCategoryDirectory();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("dianBoCategoryDirectory onError = " + e);
+                }
             }
 
             @Override
@@ -94,7 +133,7 @@ public class CategoryDirectoryActivity extends BaseActivity implements CategoryL
                 int i = 0, index = 0;
                 Gson gson = new Gson();
                 mCategoryPropertyModel = gson.fromJson(response, CategoryPropertyModel.class);
-                if(mCategoryPropertyModel.getErrorno() == 0){
+                if (mCategoryPropertyModel.getErrorno() == 0) {
                     for (CategoryPropertyModel.DataBean mdata : mCategoryPropertyModel.getData()) {
                         Log.d(TAG, "onResponse name =" + mdata.getName());
                         if (mStatus == 0) {

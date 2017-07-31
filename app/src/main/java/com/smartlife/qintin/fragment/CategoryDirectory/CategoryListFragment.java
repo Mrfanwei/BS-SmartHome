@@ -18,22 +18,28 @@ import com.facebook.imagepipeline.common.ResizeOptions;
 import com.facebook.imagepipeline.request.ImageRequest;
 import com.facebook.imagepipeline.request.ImageRequestBuilder;
 import com.google.gson.Gson;
+import com.smartlife.MainApplication;
 import com.smartlife.R;
 import com.smartlife.http.OkRequestEvents;
-import com.smartlife.qintin.fragment.AttachFragment;
+import com.smartlife.http.TokenCallBack;
 import com.smartlife.qintin.fragment.BaseFragment;
 import com.smartlife.qintin.model.CategoryAllRadioModel;
 import com.smartlife.qintin.model.CategoryAllRadioModel.DataBean;
+import com.smartlife.qintin.model.ErrorModel;
 import com.smartlife.qintin.net.NetworkUtils;
 import com.smartlife.qintin.widget.DividerItemDecoration;
 import com.smartlife.qintin.widget.SwipeRefreshLayout;
+import com.smartlife.utils.GsonUtil;
+import com.smartlife.utils.LogUtil;
 import com.smartlife.utils.ToastUtil;
 import com.zhy.http.okhttp.callback.StringCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
+import okhttp3.Response;
 
 public class CategoryListFragment extends BaseFragment implements SwipeRefreshLayout.OnPushLoadMoreListener, SwipeRefreshLayout.OnPullRefreshListener {
 
@@ -98,7 +104,7 @@ public class CategoryListFragment extends BaseFragment implements SwipeRefreshLa
         mLayoutInflater = LayoutInflater.from(mContext);
         View view = mLayoutInflater.inflate(R.layout.fragment_list, container, false);
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
-        mLoadingTargetView = (View)mLoadView.findViewById(R.id.player_loading_view);
+        mLoadingTargetView = (View) mLoadView.findViewById(R.id.player_loading_view);
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.list_recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
         recyclerView.setHasFixedSize(true);
@@ -114,9 +120,9 @@ public class CategoryListFragment extends BaseFragment implements SwipeRefreshLa
     @Override
     protected void onFirstUserVisible() {
         toggleShowLoading(true, null);
-        if(NetworkUtils.isConnectWifi(mContext)){
+        if (NetworkUtils.isConnectWifi(mContext)) {
             dianBoCategoryList(currentpage);
-        }else{
+        } else {
             toggleNetworkError(true, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -206,16 +212,52 @@ public class CategoryListFragment extends BaseFragment implements SwipeRefreshLa
     }
 
     private void dianBoCategoryList(int page) {
-        OkRequestEvents.dianBoCategoryList(mApplication.getAccessToken(), mDataId, mValueId, page, new StringCallback() {
+        OkRequestEvents.dianBoCategoryList(mDataId, mValueId, page, new StringCallback() {
             @Override
-            public void onError(Call call, Exception e, int id) {
+            public void onError(Call call, Exception e, int id, Response response) {
                 currentpage--;
                 if (page == 1) {
                     mSpList.setRefreshing(false);
                 } else {
                     mSpList.setLoadMore(false);
                 }
-                ToastUtil.showShort("网络异常");
+
+                if (call == null && e == null && id == 0) {
+                    // 没有access_token
+                    LogUtil.getLog().d("no token");
+                    OkRequestEvents.qinTinCredential(new TokenCallBack() {
+                        @Override
+                        public void onResponse() {
+                            dianBoCategoryList(page);
+                        }
+
+                        @Override
+                        public void onError(String s) {
+                            LogUtil.getLog().d("get token onError = " + s);
+                        }
+
+                        @Override
+                        public void onEmpty() {
+                            LogUtil.getLog().d("get token onEmpty");
+                        }
+                    });
+                } else {
+                    if (response != null) {
+                        try {
+                            ErrorModel errorModel = GsonUtil.json2Bean(response.body().string(), ErrorModel.class);
+                            if (errorModel.getErrorno() == ErrorModel.TOKEN_EXPIRED || errorModel.getErrorno() == ErrorModel.TOKEN_NOT_FOUND) {
+                                // Token问题
+                                MainApplication.getInstance().setAccessToken(null);
+                                dianBoCategoryList(page);
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        return;
+                    }
+                    LogUtil.getLog().d("dianBoCategoryList onError = " + e);
+                    ToastUtil.showShort("网络异常");
+                }
             }
 
             @Override

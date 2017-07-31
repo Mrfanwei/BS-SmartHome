@@ -5,6 +5,12 @@ package com.smartlife.utils;
  */
 
 public class Constants {
+
+    /**
+     * 是否是调试模式 !!! 重要 !!! 正式发布一定要改为false !!! 否则会打印全部日志和请求 !!!
+     */
+    public static final boolean isDebug = true;
+
     public static final String DLAN_DEVICE = "com.intent.action.DLAN_DEVICE";
 
     public static final String PREFS_NAME = "MyPrefsFile";

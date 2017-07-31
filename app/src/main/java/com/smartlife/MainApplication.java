@@ -2,7 +2,6 @@ package com.smartlife;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
@@ -46,7 +45,7 @@ public class MainApplication extends Application implements ThemeUtils.switchCol
     private long favPlaylist = IConstants.FAV_PLAYLIST;
     private static Gson gson;
 
-    String mAccessToken;
+    private String mAccessToken;
 
     DomainCenterModel mDomainCenterModel = null;
     private DlanManager mDlanManager;
