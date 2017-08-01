@@ -916,7 +916,7 @@ public class MediaService extends Service {
                 }
 
                 if (!stop) {
-                    startProxy();
+                    //startProxy();
                     // String urlEn = HttpUtil.urlEncode(url);
                     String urlEn = url;
 //                    urlEn = mProxy.getProxyURL(urlEn);

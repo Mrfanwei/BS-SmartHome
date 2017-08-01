@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.protobuf.MessageLite;
 import com.smartlife.huanxin.DemoHelper;
 import com.smartlife.netty.utils.Utils;
+import com.smartlife.utils.ToastUtil;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -90,6 +91,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
                 //sendMessage("collectionliked");
             }else{
                 Log.d(TAG,"content="+content);
+                ToastUtil.showShort(content);
             }
         }
     }

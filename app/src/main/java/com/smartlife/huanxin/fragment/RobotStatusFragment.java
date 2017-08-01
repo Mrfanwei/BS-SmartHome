@@ -208,7 +208,7 @@ public class RobotStatusFragment extends DialogFragment{
     public void getrobotinfo() {
 
         list_robots.clear();
-        OkRequestEvents.getrobotinfo(new StringCallback() {
+        OkRequestEvents.getRobotInfo(new StringCallback() {
             @Override
             public void onError(Call call, Exception e, int id, String jsonString) {
                 Log.d(TAG, "onError");

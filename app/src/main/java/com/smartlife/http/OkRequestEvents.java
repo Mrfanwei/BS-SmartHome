@@ -295,10 +295,23 @@ public class OkRequestEvents {
         postImpl("http://112.74.175.96:8080/unBindRobot", callback, params, null);
     }
 
+    public static void insertRobotInfo(String phoneid,String address,String robotname,String robotSerial,
+                                       String robotid,String online,StringCallback callback){
+        HashMap<String, String> params = BaseRequestParams();
+        params.put("phoneid", phoneid);
+        params.put("address", address);
+        params.put("robotname", robotname);
+        params.put("robotSerial", robotSerial);
+        params.put("robotid", robotid);
+        params.put("online", online);
+
+        postImpl("http://112.74.175.96:8080/insertRobotData", callback, params, null);
+    }
+
     /**
      * 获取绑定robot信息
      */
-    public static void getrobotinfo(StringCallback callback) {
+    public static void getRobotInfo(StringCallback callback) {
         HashMap<String, String> params = BaseRequestParams();
         params.put("phoneid", DemoHelper.getInstance().getCurrentUsernName());
 

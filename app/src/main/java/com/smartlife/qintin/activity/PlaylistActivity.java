@@ -722,7 +722,6 @@ public class PlaylistActivity extends BaseActivity implements ObservableScrollVi
                         musicInfo.albumData = playThumb;
                         musicInfo.filepath = mData.getMediainfo().getBitrates_url().get(0).getFile_path();
                         musicInfo.url = "http://" + mDomainUrl + "/" + mData.getMediainfo().getBitrates_url().get(0).getFile_path() + "/" + mData.getId() + ".mp3" + "?" + "deviceid=00002000-6822-8da4-ffff-ffffca74";
-                        Log.d(TAG, "musicInfo.url =" + musicInfo.url);
                         itemInfos.put((long) mData.getId(), musicInfo);
                         adapterList.add(musicInfo);
                     }
