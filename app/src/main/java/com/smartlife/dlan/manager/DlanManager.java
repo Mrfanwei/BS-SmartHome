@@ -39,7 +39,7 @@ public class DlanManager {
 
         }
         return mDlanStubManager;
-    }
+     }
 
     void bindService(Context mContext, ServiceConnection conn) {
         Intent intent = new Intent(mContext, DlanService.class);

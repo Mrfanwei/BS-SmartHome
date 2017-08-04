@@ -199,6 +199,9 @@ public class DlanService extends Service {
 
         @Override
         public boolean play(String uri) throws RemoteException {
+
+            if(uri == null)
+                return false;
             SharedPreferences settings = getSharedPreferences(Constants.PREFS_NAME, 0);
             String name = settings.getString("DlanSelectDevice","");
             for(Device mdevice:mDevices){

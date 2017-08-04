@@ -158,7 +158,7 @@ public class VoiceWake extends VoiceBase {
 
     private String getResource(Context context) {
         return ResourceUtil.generateResourcePath(context,
-                ResourceUtil.RESOURCE_TYPE.assets, "ivw/"+"594a09d9"+".jet");
+                ResourceUtil.RESOURCE_TYPE.assets, "ivw/"+"5984265d"+".jet");
     }
 
     public void startListening(){

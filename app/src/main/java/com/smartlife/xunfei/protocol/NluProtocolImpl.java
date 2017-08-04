@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -13,6 +12,7 @@ import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.smartlife.MainApplication;
 import com.smartlife.dlan.manager.DlanManager;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.huanxin.gui.VideoCallActivity;
 import com.smartlife.netty.helper.Constants;
 import com.smartlife.qintin.info.MusicInfo;
@@ -20,14 +20,10 @@ import com.smartlife.qintin.model.DianBoSearchModel;
 import com.smartlife.qintin.model.DianBoSearchModel.DataBean;
 import com.smartlife.qintin.model.DianBoSearchModel.DataBean.DoclistBean.DocsBean;
 import com.smartlife.qintin.service.MusicPlayer;
-import com.smartlife.utils.HandlerUtil;
+import com.smartlife.qintin.handler.HandlerUtil;
 import com.smartlife.xunfei.constant.XunConstants;
-import com.smartlife.xunfei.model.NluJokeModel;
-import com.smartlife.xunfei.model.NluTelModel;
-import com.smartlife.xunfei.model.QueryTvModel;
 import com.smartlife.xunfei.model.SmartHomeAirObjModel;
 import com.smartlife.xunfei.model.SmartHomeModel;
-import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
 import org.json.JSONArray;
@@ -48,38 +44,29 @@ public class NluProtocolImpl{
     private String TAG = "SmartLife/NluPro";
     private Context context;
     MainApplication mApplicatin=null;
-    private QueryTvModel mQueryTvModel;
-    private NluJokeModel mNluJokeModel;
+
     private SmartHomeModel mSmartHomeModel;
     private SmartHomeAirObjModel mSmartHomeAirObjModel;
-    private NluTelModel mNluTelModel;
-    private List<SmartHomeModel> mList;
-    private List<DocsBean> mSearchList;
-    List<DocsBean> mList2;
-    String albumname;
-    String titlename;
     String substring;
-    int position,index=2;
-    long[] itemlist;
-    HashMap<Long, MusicInfo> itemInfos;
+    int position;
+    private Handler mHandler;
+
 
 
     public NluProtocolImpl(Context context){
         this.context = context;
         mApplicatin = (MainApplication)context;
-        mSearchList = new ArrayList<>();
+        mHandler = HandlerUtil.getInstance(context);
     }
 
     Gson mGson = new Gson();
 
     public void dealNulData(String data) {
-        String substring="";
         String nluType=null;
         JSONObject mSemantic;
         JSONObject mSlots;
         String attrType = null;
         JSONObject jo=null;
-        int position;
         try {
             jo = new JSONObject(data);
             nluType = jo.getString("service");
@@ -87,7 +74,7 @@ public class NluProtocolImpl{
             e.printStackTrace();
         }
 
-        if(nluType!=null && nluType.equals("airControl_smartHome")){
+        if("airControl_smartHome".equals(nluType)){
             try {
                 mSemantic = jo.getJSONObject("semantic");
                 mSlots = mSemantic.getJSONObject("slots");
@@ -100,7 +87,7 @@ public class NluProtocolImpl{
             }else if(attrType.equals("Object(digital)")){
                 mSmartHomeAirObjModel = mGson.fromJson(data,SmartHomeAirObjModel.class);
             }
-        }else if(nluType!=null && nluType.equals("tv_smartHome")){
+        }else if("tv_smartHome".equals(nluType)){
             try {
                 mSemantic = jo.getJSONObject("semantic");
                 mSlots = mSemantic.getJSONObject("slots");
@@ -111,7 +98,7 @@ public class NluProtocolImpl{
             if(attrType.equals("String")){
                 mSmartHomeModel = mGson.fromJson(data,SmartHomeModel.class);
             }
-        }else if(nluType!=null && nluType.equals("joke")){
+        }else if("joke".equals(nluType)){
             JSONObject mdata;
             JSONArray mresult;
             JSONObject mcontent;
@@ -126,14 +113,12 @@ public class NluProtocolImpl{
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            // mNluJokeModel = mGson.fromJson(data,NluJokeModel.class);
+
             DlanManager.getInstance(context).play(mp3);
-        }else if(nluType!=null && nluType.equals("telephone")){
-            //mNluTelModel = mGson.fromJson(data,NluTelModel.class);
-            Log.d(TAG,"telephone");
+        }else if("telephone".equals(nluType)){
             tovideo("chat","ss");
         }else{
-            dealProtocol(data);
+            dealRadioProtocol(data);
         }
     }
 
@@ -156,11 +141,10 @@ public class NluProtocolImpl{
     }
 
 
-    private void dealProtocol(String data){
+    private void dealRadioProtocol(String data){
 
         String mdata=null;
-        JSONObject jo=null;
-        index =2;
+        JSONObject jo;
         try {
             jo = new JSONObject(data);
             mdata = jo.getString("text");
@@ -169,9 +153,11 @@ public class NluProtocolImpl{
         }
         if((position=mdata.indexOf(XunConstants.XUNFEI_BOFAN))!=-1){
             substring = mdata.substring(position+XunConstants.XUNFEI_BOFAN.length());
-            albumname = substring.substring(0,index);
-            Log.d(TAG,"albumname = "+albumname+" substring="+substring+" length="+substring.length());
-            searchHttp(albumname);
+            if(substring.length() >= "节目".length()){
+                searchRadio(substring);
+            }else{
+                return;
+            }
         }else if((position=mdata.indexOf(XunConstants.XUNFEI_WANTSEE))!=-1){
             substring = mdata.substring(position+XunConstants.XUNFEI_WANTSEE.length());
         }else if((position=mdata.indexOf(XunConstants.XUNFEI_BOFAN))!=-1){
@@ -181,194 +167,99 @@ public class NluProtocolImpl{
         }
     }
 
-    List<DocsBean> mResult;
-    private Handler mHandler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            int position=0;
-            Log.d(TAG,"");
-            itemInfos = new HashMap<>();
-            switch (msg.what){
-                case 1:
-                    Log.d(TAG,"handleMessage position="+index+" length="+substring.length()+" substring="+substring);
-                    while(index < substring.length() && (mList2=searchList(mSearchList,albumname)).size()>0){
-                        mSearchList.clear();
+    private void searchRadio(String data){
+        String name;
+        name = data.substring(0,"节目".length());
 
-                        index++;
-                        mSearchList = mList2;
-                        albumname = substring.substring(0,index);
-                        Log.d(TAG,"albumname ="+albumname);
-                    }
-                    index--;
-                    Log.d(TAG,"mList2 ="+mSearchList.size()+" substring.length()="+substring.length()+" index="+index);
-                    if(substring.length()-index>2){
-                        titlename = substring.substring(index);
-                        while(substring.length()-index>2 && (mList2=searchList(mSearchList,titlename)).size()==0){
-                            index++;
-                            titlename = substring.substring(index);
-                        }
-                    }
-
-                    itemlist = new long[mSearchList.size()];
-                    for(DocsBean mdoc:mSearchList){
-                        MusicInfo musicInfo = new MusicInfo();
-                        musicInfo.songId = (long)mdoc.getId();
-                        musicInfo.musicName = mdoc.getTitle();
-                        musicInfo.artist = mdoc.getTitle();
-                        musicInfo.islocal = false;
-                        musicInfo.albumName = mdoc.getParent_name();
-                        musicInfo.albumId = mdoc.getParent_id();
-                        musicInfo.artistId = (long)mdoc.getId();
-                        musicInfo.lrc = "1";
-                        musicInfo.albumData = "1";
-                        musicInfo.filepath = mdoc.getFile_path();
-                        musicInfo.url = "http://"+mApplicatin.getDomainUrl()+"/"+mdoc.getFile_path()+"/"+musicInfo.songId+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
-                        Log.d(TAG,"mSearchList ="+mdoc.getTitle());
-                        itemlist[position] = (long)mdoc.getId();
-                        position++;
-                        itemInfos.put((long)mdoc.getId(),musicInfo);
-                    }
-
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                                MusicPlayer.playAll(itemInfos,itemlist,0, false);
-                        }
-                    }, 10);
-                    break;
-                case 2:
-                    mResult = matchList(mSearchList,substring);
-                    Log.d(TAG,"mResult size =" + mResult.size()+" name ="+mResult.get(0).getTitle());
-                    itemlist = new long[mResult.size()];
-                    for(DocsBean mdata:mResult){
-                        MusicInfo musicInfo = new MusicInfo();
-                        musicInfo.songId = (long)mdata.getId();
-                        musicInfo.musicName = mdata.getTitle();
-                        musicInfo.artist = mdata.getTitle();
-                        musicInfo.islocal = false;
-                        musicInfo.albumName = mdata.getParent_name();
-                        musicInfo.albumId = mdata.getParent_id();
-                        musicInfo.artistId = (long)mdata.getId();
-                        musicInfo.lrc = "1";
-                        musicInfo.albumData = "1";
-                        musicInfo.filepath = mdata.getFile_path();
-                        musicInfo.url = "http://"+mApplicatin.getDomainUrl()+"/"+mdata.getFile_path()+"/"+musicInfo.songId+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
-                        itemlist[position] = (long)mdata.getId();
-                        position++;
-                        itemInfos.put((long)mdata.getId(),musicInfo);
-                    }
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            MusicPlayer.playAll(itemInfos,itemlist,0, false);
-                        }
-                    }, 10);
-                    break;
+        OkRequestEvents.searchRadio(name, new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id, String jsonString) {
+                Log.d(TAG,"onError");
             }
-        }
-    };
 
-    void searchHttp(String data){
-        String mSearchProgramUrl = "http://api.open.qingting.fm/newsearch/"+data+"/type/program_ondemand";
-        OkHttpUtils
-                .post()
-                .url(mSearchProgramUrl)
-                .addParams("access_token",mApplicatin.getAccessToken())
-                .build()
-                .execute(new StringCallback() {
-                    @Override
-                    public void onError(Call call, Exception e, int id, String jsonString) {
-                        Log.d(TAG,"onError");
-                    }
+            @Override
+            public void onResponse(String response, int id) {
+                Gson gson = new Gson();
+                DianBoSearchModel mDianBoSearchModel;
+                List<DocsBean> mSearchList = new ArrayList<>();
+                List<DocsBean> mResultList;
+                long[] itemlist;
+                HashMap<Long, MusicInfo> itemInfos = new HashMap<>();
 
-                    @Override
-                    public void onResponse(String response, int id) {
-                        Gson gson = new Gson();
-                        DianBoSearchModel mDianBoSearchModel;
-                        Log.d(TAG,"response ="+response);
-                        mDianBoSearchModel = gson.fromJson(response,DianBoSearchModel.class);
-
-                        for(DataBean data:mDianBoSearchModel.getData()){
-                            for(DocsBean doc:data.getDoclist().getDocs()){
-                                mSearchList.add(doc);
-                            }
-                        }
-                        HandlerUtil.sendmsg(mHandler,null,2);
-                    }
-                });
-    }
-
-    List<DocsBean> searchList(List<DocsBean> list,String data){
-        List<DocsBean> mList = new ArrayList<>();
-        for(DocsBean doc:list){
-            if(doc.getParent_name().contains(data) || doc.getTitle().contains(data)){
-                mList.add(doc);
-            }
-        }
-        return  mList;
-    }
-
-    List<DocsBean> matchList(List<DocsBean> list,String data){
-        List<DocsBean> mMatchList1 = new ArrayList<>();
-        List<DocsBean> mMatchList2 = new ArrayList<>();
-        List<DocsBean> mMatchList3 = new ArrayList<>();
-        List<DocsBean> mMatchList4 = new ArrayList<>();
-        List<DocsBean> mMatchList5 = new ArrayList<>();
-        List<DocsBean> mResultList;
-
-        for(DocsBean mdata:list){
-            int n =2;
-            try {
-                if (mdata.getParent_name().contains(data.substring(n, n + 2)) || mdata.getTitle().contains(data.substring(n, n + 2))) {
-                    n = n + 2;
-                    mMatchList1.add(mdata);
-                    if (mdata.getParent_name().contains(data.substring(n, n + 2)) || mdata.getTitle().contains(data.substring(n, n + 2))) {
-                        mMatchList2.add(mdata);
-                        n = n+2;
-                        if (mdata.getParent_name().contains(data.substring(n, n + 2)) || mdata.getTitle().contains(data.substring(n, n + 2))) {
-                            mMatchList3.add(mdata);
-                        }
+                mDianBoSearchModel = gson.fromJson(response,DianBoSearchModel.class);
+                for(DataBean data:mDianBoSearchModel.getData()){
+                    for(DocsBean doc:data.getDoclist().getDocs()){
+                        mSearchList.add(doc);
                     }
                 }
-            }catch (IndexOutOfBoundsException e){
 
-            }
-            try{
-                n =2;
-                if( mMatchList3.size()>1 || mMatchList2.size()>1 || mMatchList1.size()>1){
-                    if(mdata.getParent_name().contains(data.substring(n,n+3)) || mdata.getTitle().contains(data.substring(n,n+3))){
-                        n=n+3;
-                        mMatchList4.add(mdata);
-                        if(mdata.getParent_name().contains(data.substring(n,n+3)) || mdata.getTitle().contains(data.substring(n,n+3))){
-                            mMatchList5.add(mdata);
-                        }
-                    }
+                if(mSearchList.size() < 1){
+                    return;
+                }else if(mSearchList.size() == 1){
+                    mResultList = mSearchList;
+                }else{
+                    mResultList = matchRadioList(mSearchList,data);
                 }
-            }catch (IndexOutOfBoundsException e){
 
+                for(DocsBean mdoc : mResultList){
+                    Log.d(TAG,"mdoc title ="+mdoc.getTitle());
+                }
+
+                itemlist = new long[mResultList.size()];
+                for(DocsBean mdata:mResultList){
+                    MusicInfo musicInfo = new MusicInfo();
+                    musicInfo.songId = (long)mdata.getId();
+                    musicInfo.musicName = mdata.getTitle();
+                    musicInfo.artist = mdata.getTitle();
+                    musicInfo.islocal = false;
+                    musicInfo.albumName = mdata.getParent_name();
+                    musicInfo.albumId = mdata.getParent_id();
+                    musicInfo.artistId = (long)mdata.getId();
+                    musicInfo.lrc = "1";
+                    musicInfo.albumData = "1";
+                    musicInfo.filepath = mdata.getFile_path();
+                    musicInfo.url = "http://"+mApplicatin.getDomainUrl()+"/"+mdata.getFile_path()+"/"+musicInfo.songId+".mp3"+"?"+"deviceid=00002000-6822-8da4-ffff-ffffca74";
+                    itemlist[position] = (long)mdata.getId();
+                    position++;
+                    itemInfos.put((long)mdata.getId(),musicInfo);
+                }
+
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        MusicPlayer.playAll(itemInfos,itemlist,0, false);
+                    }
+                }, 10);
             }
+        });
+    }
+
+    List<DocsBean> matchRadioList(List<DocsBean> list,String data){
+        List<DocsBean> resultList = new ArrayList<>();
+        List<DocsBean> tempList;
+        int position =1;
+        String matchString;
+        tempList = list;
+
+        while(data.length() > (position+1)*2){
+            matchString = data.substring(position*2,(position+1)*2);
+            for(DocsBean docs : tempList){
+                if(docs.getParent_name().contains(matchString) || docs.getTitle().contains(matchString)){
+                    resultList.add(docs);
+                }
+            }
+
+            if(resultList.size() < 1){
+                resultList = tempList;
+                break;
+            }else if(resultList.size() == 1){
+                break;
+            }
+
+            tempList = resultList;
+            position++;
         }
 
-        if(mMatchList5.size()>0){
-            Log.d(TAG,"mMatchList5");
-            mResultList = mMatchList5;
-        }else if(mMatchList4.size()>0){
-            Log.d(TAG,"mMatchList4");
-            mResultList = mMatchList4;
-        }else if(mMatchList3.size()>0){
-            Log.d(TAG,"mMatchList3");
-            mResultList = mMatchList3;
-        }else if(mMatchList2.size()>0){
-            Log.d(TAG,"mMatchList2");
-            mResultList = mMatchList2;
-        }else if(mMatchList1.size()>0){
-            Log.d(TAG,"mMatchList1");
-            mResultList = mMatchList1;
-        }else{
-            Log.d(TAG,"mMatchList");
-            mResultList = list;
-        }
-        return mResultList;
+        return resultList;
     }
 }

@@ -137,7 +137,7 @@ public class CategoryFragment extends BaseFragment {
             toggleNetworkError(true, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    toggleShowLoading(true, null);
+                    //toggleShowLoading(true, null);
                     dianBoCategoryProgram();
                 }
             });

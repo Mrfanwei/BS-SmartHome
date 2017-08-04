@@ -86,14 +86,14 @@ public class SelectFragment extends BaseFragment {
     protected void onFirstUserVisible() {
         if (mLoodView != null)
             mLoodView.requestFocus();
-        toggleShowLoading(true, null);
+//        toggleShowLoading(true, null);
         if (NetUtils.isNetworkConnected(mContext)) {
             dianBoCategoryRecommend();
         } else {
             toggleNetworkError(true, new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    toggleShowLoading(true, null);
+//                    toggleShowLoading(true, null);
                     dianBoCategoryRecommend();
                 }
             });
