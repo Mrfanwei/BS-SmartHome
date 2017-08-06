@@ -87,8 +87,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<MessageLite> {
             String content = cp.getContent();
             if(content.contains("collectionLike")){
                 Log.d(TAG,"collectionLike");
-                /******此次异常会导致后台异常****/
-                //sendMessage("collectionliked");
+
             }else{
                 Log.d(TAG,"content="+content);
                 ToastUtil.showShort(content);

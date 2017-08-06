@@ -187,6 +187,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         customViewPager.setAdapter(customViewPagerAdapter);
         customViewPager.setOffscreenPageLimit(3);
         customViewPager.setCurrentItem(0);
+        tvSelectionBar.setSelected(true);
         ivSearchBar.setSelected(true);
         customViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override

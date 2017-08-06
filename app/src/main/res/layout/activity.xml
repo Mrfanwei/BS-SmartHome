@@ -9,7 +9,6 @@
         android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/theme_color_primary"
         android:minHeight="?attr/actionBarSize"
         app:contentInsetStart="0.0dp"
         app:layout_scrollFlags="enterAlways|scroll"
@@ -30,7 +29,6 @@
                 android:gravity="center"
                 android:textColor="@drawable/actionbar_valuestytle"
                 android:textSize="25dp"
-                android:textStyle="bold"
                 android:text="精选"
                 android:clickable="true"/>
 
@@ -42,7 +40,6 @@
                 android:gravity="center"
                 android:textColor="@drawable/actionbar_valuestytle"
                 android:textSize="25dp"
-                android:textStyle="bold"
                 android:text="分类"
                 android:clickable="true"/>
 
@@ -54,7 +51,6 @@
                 android:gravity="center"
                 android:textColor="@drawable/actionbar_valuestytle"
                 android:textSize="25dp"
-                android:textStyle="bold"
                 android:text="音乐"
                 android:clickable="true"/>
 
@@ -66,7 +62,6 @@
                 android:gravity="center"
                 android:textColor="@drawable/actionbar_valuestytle"
                 android:textSize="25dp"
-                android:textStyle="bold"
                 android:text="小说"
                 android:clickable="true"/>
 

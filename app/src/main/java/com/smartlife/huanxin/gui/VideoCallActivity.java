@@ -720,5 +720,4 @@ public class VideoCallActivity extends CallActivity implements OnClickListener,V
             }
         }
     }
-
 }
