@@ -39,8 +39,6 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
     private String TAG = "SmartLife/NetSearch";
     private SearchView mSearchView;
     private InputMethodManager mImm;
-    private String queryString;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,7 +57,6 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
         ft.add(R.id.search_frame, f);
         ft.commit();
         mImm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
     }
 
 
@@ -107,7 +104,7 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
 
     @Override
     public boolean onQueryTextSubmit(final String query) {
-        Log.d(TAG,"onQueryTextSubmit query ="+query);
+        Log.d(TAG, "onQueryTextSubmit query =" + query);
         hideInputManager();
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         SearchTabPagerFragment fragment = SearchTabPagerFragment.newInstance(0, query);
@@ -115,31 +112,11 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
         return true;
     }
 
-
     @Override
-    public boolean onQueryTextChange(final String newText) {
-        Log.d(TAG,"onQueryTextChange newText ="+newText);
-        if (newText.equals(queryString)) {
-            return true;
-        }
-        queryString = newText;
-        if (!queryString.trim().equals("")) {
-            //this.searchResults = new ArrayList();
-            //List<MusicInfo> songList = SearchUtils.searchSongs(this, queryString);
-
-
-            // searchResults.addAll((songList.size() < 10 ? songList : songList.subList(0, 10)));
-        } else {
-//            searchResults.clear();
-//            adapter.updateSearchResults(searchResults);
-//            adapter.notifyDataSetChanged();
-        }
-
-//        adapter.updateSearchResults(searchResults);
-//        adapter.notifyDataSetChanged();
-
-        return true;
+    public boolean onQueryTextChange(String newText) {
+        return false;
     }
+
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -158,16 +135,9 @@ public class NetSearchWordsActivity extends AppCompatActivity implements SearchV
         }
     }
 
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        finish();
-    }
-
     @Override
     public void onSearch(String t) {
-        Log.d(TAG,"onSearch ="+t);
+        Log.d(TAG, "onSearch =" + t);
         mSearchView.setQuery(t, true);
     }
 }
