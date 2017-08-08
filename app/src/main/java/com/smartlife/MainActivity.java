@@ -5,10 +5,10 @@ import android.app.ActivityManager;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
@@ -19,9 +19,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bilibili.magicasakura.utils.ThemeUtils;
@@ -59,21 +57,17 @@ import java.util.List;
 
 import okhttp3.Call;
 
+import static com.smartlife.R.id.tabLayout;
+
 public class MainActivity extends BaseActivity implements CardPickerDialog.ClickListener, MusicFragment.OnFragmentInteractionListener, CategoryFragment.OnFragmentInteractionListener,
-                        SelectFragment.OnFragmentInteractionListener,NovelFragment.OnFragmentInteractionListener {
+        SelectFragment.OnFragmentInteractionListener, NovelFragment.OnFragmentInteractionListener {
     public String TAG = "SmartLifee/MainAct";
-    private ActionBar ab;
-    private TextView tvSelectionBar, tvCategoryBar, tvNovelBar, tvMusicBar;
-    private ImageView ivSearchBar;
-    private ArrayList<TextView> tabs = new ArrayList<>();
+    private CustomViewPager mCustomViewPager;
+    private TabLayout mTabLayout;
     private DrawerLayout drawerLayout;
     private ListView mLvLeftMenu;
     private long time = 0;
     private SplashScreen splashScreen;
-    SelectFragment mSelectFragment;
-    CategoryFragment mCategoryFragment;
-    NovelFragment mNovelFragment;
-    MusicFragment mMusicFragment;
 
     public void onCreate(Bundle savedInstanceState) {
         //        splashScreen = new SplashScreen(this);
@@ -96,13 +90,16 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     }
 
     private void initView() {
-        tvSelectionBar = (TextView) findViewById(R.id.tv_selection_bar);
-        tvCategoryBar = (TextView) findViewById(R.id.tv_category_bar);
-        tvNovelBar = (TextView) findViewById(R.id.tv_novel_bar);
-        tvMusicBar = (TextView) findViewById(R.id.tv_music_bar);
-        ivSearchBar = (ImageView) findViewById(R.id.iv_search_bar);
         drawerLayout = (DrawerLayout) findViewById(R.id.fd);
         mLvLeftMenu = (ListView) findViewById(R.id.id_lv_left_menu);
+        mCustomViewPager = (CustomViewPager) findViewById(R.id.main_viewpager);
+        mTabLayout = (TabLayout) findViewById(tabLayout);
+
+        findViewById(R.id.iv_search_bar).setOnClickListener(v -> {
+            final Intent intent = new Intent(MainActivity.this, NetSearchWordsActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            MainActivity.this.startActivity(intent);
+        });
 
         setToolBar();
     }
@@ -110,10 +107,12 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     private void setToolBar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
-        ab.setHomeAsUpIndicator(R.drawable.ic_menu);
-        ab.setTitle("");
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+            ab.setHomeAsUpIndicator(R.drawable.ic_menu);
+            ab.setTitle("");
+        }
     }
 
     private void qinTinDomainCenter() {
@@ -170,77 +169,14 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
     }
 
     private void setViewPager() {
-        tabs.add(tvSelectionBar);
-        tabs.add(tvCategoryBar);
-        tabs.add(tvMusicBar);
-        tabs.add(tvNovelBar);
-        final CustomViewPager customViewPager = (CustomViewPager) findViewById(R.id.main_viewpager);
-        mSelectFragment = new SelectFragment();
-        mCategoryFragment = new CategoryFragment();
-        mMusicFragment = new MusicFragment();
-        mNovelFragment = new NovelFragment();
         CustomViewPagerAdapter customViewPagerAdapter = new CustomViewPagerAdapter(getSupportFragmentManager());
-        customViewPagerAdapter.addFragment(mSelectFragment);
-        customViewPagerAdapter.addFragment(mCategoryFragment);
-        customViewPagerAdapter.addFragment(mMusicFragment);
-        customViewPagerAdapter.addFragment(mNovelFragment);
-        customViewPager.setAdapter(customViewPagerAdapter);
-        customViewPager.setOffscreenPageLimit(3);
-        customViewPager.setCurrentItem(0);
-        tvSelectionBar.setSelected(true);
-        ivSearchBar.setSelected(true);
-        customViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                switchTabs(position);
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
-
-        tvSelectionBar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                customViewPager.setCurrentItem(0);
-            }
-        });
-        tvCategoryBar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                customViewPager.setCurrentItem(1);
-            }
-        });
-        tvMusicBar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                customViewPager.setCurrentItem(2);
-            }
-        });
-        tvNovelBar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                customViewPager.setCurrentItem(3);
-            }
-        });
-
-        ivSearchBar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final Intent intent = new Intent(MainActivity.this, NetSearchWordsActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                MainActivity.this.startActivity(intent);
-            }
-        });
+        customViewPagerAdapter.addFragment(new SelectFragment());
+        customViewPagerAdapter.addFragment(new CategoryFragment());
+        customViewPagerAdapter.addFragment(new MusicFragment());
+        customViewPagerAdapter.addFragment(new NovelFragment());
+        mCustomViewPager.setAdapter(customViewPagerAdapter);
+        mCustomViewPager.setOffscreenPageLimit(3);
+        mTabLayout.setupWithViewPager(mCustomViewPager);
     }
 
 
@@ -292,17 +228,6 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
                 }
             }
         });
-    }
-
-
-    private void switchTabs(int position) {
-        for (int i = 0; i < tabs.size(); i++) {
-            if (position == i) {
-                tabs.get(i).setSelected(true);
-            } else {
-                tabs.get(i).setSelected(false);
-            }
-        }
     }
 
     @Override
@@ -388,6 +313,7 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
 
     static class CustomViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragments = new ArrayList<>();
+        private final String[] title = {"精选", "分类", "音乐", "小说"};
 
         public CustomViewPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -405,6 +331,11 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         @Override
         public int getCount() {
             return mFragments.size();
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return title[position];
         }
     }
 
