@@ -34,32 +34,23 @@ public class RecentSearchAdapter extends RecyclerView.Adapter<RecentSearchAdapte
     private ArrayList<String> recentSearches = new ArrayList<>();
     private SearchWords searchWords;
 
-    public RecentSearchAdapter(Activity context) {
+    public RecentSearchAdapter(Activity context, SearchWords search) {
         mContext = context;
-        recentSearches = SearchHistory.getInstance(context).getRecentSearches();
-    }
-
-    public void setListenter(SearchWords search) {
         searchWords = search;
+        recentSearches = SearchHistory.getInstance(context).getRecentSearches();
     }
 
     @Override
     public ItemHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        View v0 = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recent_search_item, null);
-        ItemHolder ml0 = new ItemHolder(v0);
-        return ml0;
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.recent_search_item, viewGroup, false);
+        return new ItemHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ItemHolder itemHolder, int i) {
 
-        itemHolder.title.setText(recentSearches.get(i));
+        itemHolder.setData(recentSearches.get(i));
         setOnPopupMenuListener(itemHolder, i);
-    }
-
-    @Override
-    public void onViewRecycled(ItemHolder itemHolder) {
-
     }
 
     @Override
@@ -69,38 +60,32 @@ public class RecentSearchAdapter extends RecyclerView.Adapter<RecentSearchAdapte
 
     private void setOnPopupMenuListener(ItemHolder itemHolder, final int position) {
 
-        itemHolder.menu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SearchHistory.getInstance(mContext).deleteRecentSearches(recentSearches.get(position));
-                recentSearches = SearchHistory.getInstance(mContext).getRecentSearches();
-                notifyDataSetChanged();
-            }
+        itemHolder.menu.setOnClickListener(v -> {
+            SearchHistory.getInstance(mContext).deleteRecentSearches(recentSearches.get(position));
+            recentSearches = SearchHistory.getInstance(mContext).getRecentSearches();
+            notifyDataSetChanged();
         });
     }
 
+    public class ItemHolder extends RecyclerView.ViewHolder {
 
-    public class ItemHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-        TextView title;
-        ImageView menu;
+        public final TextView title;
+        public final ImageView menu;
 
         public ItemHolder(View view) {
             super(view);
-            this.title = (TextView) view.findViewById(R.id.title);
-            this.menu = (ImageView) view.findViewById(R.id.menu);
-
-            view.setOnClickListener(this);
+            title = (TextView) view.findViewById(R.id.title);
+            menu = (ImageView) view.findViewById(R.id.menu);
         }
 
-        @Override
-        public void onClick(View v) {
-            if (searchWords != null) {
-                searchWords.onSearch(recentSearches.get(getAdapterPosition()));
-            }
-
+        public void setData(String hotWord) {
+            title.setText(hotWord);
+            itemView.setOnClickListener(v -> {
+                if (searchWords != null) {
+                    searchWords.onSearch(hotWord);
+                }
+            });
         }
-
     }
 }
 
