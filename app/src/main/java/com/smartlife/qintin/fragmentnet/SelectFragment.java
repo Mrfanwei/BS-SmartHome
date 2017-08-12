@@ -142,21 +142,7 @@ public class SelectFragment extends BaseFragment {
 
         mLayoutInflater = LayoutInflater.from(mContext);
         mRecommendView = mLayoutInflater.inflate(R.layout.recommend, container, false);
-        String date = Calendar.getInstance().get(Calendar.DAY_OF_MONTH) + "";
         mViewContent = (LinearLayout) mRecommendView.findViewById(R.id.recommend_layout);
-        if (!PreferencesUtility.getInstance(mContext).isCurrentDayFirst(date)) {
-            PreferencesUtility.getInstance(mContext).setCurrentDate(date);
-            View dayRec = mLayoutInflater.inflate(R.layout.loading_daymusic, container, false);
-            ImageView view1 = (ImageView) dayRec.findViewById(R.id.loading_dayimage);
-            RotateAnimation rotateAnimation = new RotateAnimation(0, 360, 1, 0.5F, 1, 0.5F);
-            rotateAnimation.setDuration(20000L);
-            rotateAnimation.setInterpolator(new LinearInterpolator());
-            rotateAnimation.setRepeatCount(Animation.INFINITE);
-            rotateAnimation.setRepeatMode(Animation.INFINITE);
-            view1.startAnimation(rotateAnimation);
-            isDayFirst = true;
-            mContent.addView(dayRec);
-        }
 
         mLoadView = mLayoutInflater.inflate(R.layout.loading, null, false);
         mLoadingTargetView = (View) mLoadView.findViewById(R.id.player_loading_view);

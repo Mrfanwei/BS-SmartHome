@@ -159,10 +159,6 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
                 Gson gson = new Gson();
                 DomainCenterModel domainCenterModel = gson.fromJson(response, DomainCenterModel.class);
                 MainApplication.getInstance().setDomainCenterModel(domainCenterModel);
-                for (DomainCenterModel.DataBean.StoredaudioM4aBean.MediacentersBeanXXX ll : domainCenterModel.getData().getStoredaudio_m4a().getMediacenters()) {
-                    Log.d(TAG, "mDomainCenterModel domain =" + ll.getDomain() + " name=" + ll.getName() + " protocol=" + ll.getProtocol());
-                    Log.d(TAG, "mDomainCenterModel access =" + ll.getAccess());
-                }
                 setViewPager();
             }
         });
@@ -178,7 +174,6 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
         mCustomViewPager.setOffscreenPageLimit(3);
         mTabLayout.setupWithViewPager(mCustomViewPager);
     }
-
 
     private void setUpDrawer() {
         LayoutInflater inflater = LayoutInflater.from(this);
