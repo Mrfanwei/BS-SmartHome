@@ -315,7 +315,6 @@ public class SelectFragment extends BaseFragment {
 
                         if (mLoodModelList.size() > 0) {
                             if (mdata.getName().equals("banner")) {
-                                Log.d(TAG, "banner mLoodModelList=" + mLoodModelList.size());
                                 mLoodView.updataData(mLoodModelList);
                             }
                         }
