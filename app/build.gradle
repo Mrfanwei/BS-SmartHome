@@ -96,4 +96,5 @@ dependencies {
     compile 'com.google.protobuf:protobuf-lite:3.0.0'
     compile files('libs/netty-all-4.0.34.Final.jar')
     compile project(':okhttputils')
+    compile files('libs/zxing.jar')
 }

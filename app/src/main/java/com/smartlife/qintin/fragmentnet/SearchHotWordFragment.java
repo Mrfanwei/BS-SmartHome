@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.google.gson.Gson;
 import com.smartlife.MainApplication;
@@ -33,6 +34,8 @@ public class SearchHotWordFragment extends AttachFragment {
     private SearchWords searchWords;
     private HotWordAdapter mAdapter;
     private RecyclerView hot_words;
+    private RelativeLayout rl_word;
+    private View dataView;
     private boolean isFromCache = true;
 
     private FrameLayout frameLayout;
@@ -42,27 +45,30 @@ public class SearchHotWordFragment extends AttachFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.load_framelayout, container, false);
         frameLayout = (FrameLayout) view.findViewById(R.id.loadframe);
-        View loadView = LayoutInflater.from(mContext).inflate(R.layout.loading, frameLayout, false);
-        frameLayout.addView(loadView);
-        loadWordText();
+        initView();
         loadWords();
         return view;
     }
 
-    private void loadWordText() {
-        View view = LayoutInflater.from(mContext).inflate(R.layout.fragment_search_hot_words, frameLayout, false);
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-        recyclerView.setHasFixedSize(true);
-        RecentSearchAdapter adapter = new RecentSearchAdapter(mContext, searchWords);
-        recyclerView.setAdapter(adapter);
+    private void initView() {
+        View loadView = LayoutInflater.from(mContext).inflate(R.layout.loading, frameLayout, false);
+        frameLayout.addView(loadView);
 
-        hot_words = (RecyclerView) view.findViewById(R.id.hot_words);
+        dataView = LayoutInflater.from(mContext).inflate(R.layout.fragment_search_hot_words, frameLayout, false);
+        RecyclerView search_history = (RecyclerView) dataView.findViewById(R.id.search_history);
+        search_history.setLayoutManager(new LinearLayoutManager(mContext));
+        search_history.setHasFixedSize(true);
+        RecentSearchAdapter adapter = new RecentSearchAdapter(mContext, searchWords);
+        search_history.setAdapter(adapter);
+
+        hot_words = (RecyclerView) dataView.findViewById(R.id.hot_words);
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.HORIZONTAL);
         hot_words.setLayoutManager(layoutManager);
 
-        frameLayout.removeAllViews();
-        frameLayout.addView(view);
+        rl_word = (RelativeLayout) dataView.findViewById(R.id.rl_word);
+
+        /*frameLayout.removeAllViews();
+        frameLayout.addView(dataView);*/
     }
 
     private void loadWords() {
@@ -85,11 +91,15 @@ public class SearchHotWordFragment extends AttachFragment {
                         @Override
                         public void onError(String s) {
                             LogUtil.getLog().d("get token onError = " + s);
+                            frameLayout.removeAllViews();
+                            frameLayout.addView(dataView);
                         }
 
                         @Override
                         public void onEmpty() {
                             LogUtil.getLog().d("get token onEmpty");
+                            frameLayout.removeAllViews();
+                            frameLayout.addView(dataView);
                         }
                     });
                 } else {
@@ -103,6 +113,8 @@ public class SearchHotWordFragment extends AttachFragment {
                         return;
                     }
                     LogUtil.getLog().d("qinTinDomainCenter onError = " + e);
+                    frameLayout.removeAllViews();
+                    frameLayout.addView(dataView);
                 }
             }
 
@@ -120,6 +132,9 @@ public class SearchHotWordFragment extends AttachFragment {
                     mAdapter = new HotWordAdapter(texts, searchWords);
                     hot_words.setAdapter(mAdapter);
                 }
+                frameLayout.removeAllViews();
+                frameLayout.addView(dataView);
+                rl_word.setVisibility(View.VISIBLE);
             }
         });
     }
