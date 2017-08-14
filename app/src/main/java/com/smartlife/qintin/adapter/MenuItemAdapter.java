@@ -37,6 +37,7 @@ public class MenuItemAdapter extends BaseAdapter {
                     new LvMenuItem(R.mipmap.topmenu_icn_vip, "DLAN"),
                     new LvMenuItem(R.mipmap.topmenu_icn_vip, "语音"),
                     new LvMenuItem(R.mipmap.topmenu_icn_vip, "netty"),
+                    new LvMenuItem(R.mipmap.topmenu_icn_vip, "二维码"),
                     new LvMenuItem(R.mipmap.topmenu_icn_exit, "退出")
             ));
 
