@@ -5,34 +5,42 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv"
+    <RelativeLayout
+        android:id="@+id/rl_word"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="26dp"
-        android:text="热门搜索"
-        android:textSize="14sp"/>
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="26dp"
+            android:text="热门搜索"
+            android:textSize="14sp"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/hot_words"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv"
+            android:layout_margin="12dp"/>
+
+        <View
+            android:id="@+id/layout_line"
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_below="@+id/hot_words"
+            android:background="#E0E0E0"/>
+    </RelativeLayout>
+
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/hot_words"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tv"
-        android:layout_margin="12dp"/>
-
-    <View
-        android:id="@+id/layout_line"
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:layout_below="@+id/hot_words"
-        android:background="#E0E0E0"/>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerview"
+        android:id="@+id/search_history"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/layout_line"
+        android:layout_below="@+id/rl_word"
         android:layout_marginTop="16dp"/>
 
 
