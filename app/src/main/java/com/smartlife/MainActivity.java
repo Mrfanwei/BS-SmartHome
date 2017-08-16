@@ -47,7 +47,6 @@ import com.smartlife.qintin.uitl.ThemeHelper;
 import com.smartlife.qintin.widget.CustomViewPager;
 import com.smartlife.qintin.widget.SplashScreen;
 import com.smartlife.qrcode.QRCodeFragment;
-import com.smartlife.qrcode.QRScanFragment;
 import com.smartlife.utils.GsonUtil;
 import com.smartlife.utils.LogUtil;
 import com.smartlife.xunfei.fragment.SpeechFragment;
@@ -219,8 +218,10 @@ public class MainActivity extends BaseActivity implements CardPickerDialog.Click
                         drawerLayout.closeDrawers();
                         break;
                     case 8:
-                        QRScanFragment qrScanFragment = new QRScanFragment();
+                        /*QRScanFragment qrScanFragment = new QRScanFragment();
                         qrScanFragment.show(getSupportFragmentManager(), "qrcode");
+                        drawerLayout.closeDrawers();*/
+                        startActivity(new Intent(MainActivity.this, MipcaActivityCapture.class));
                         drawerLayout.closeDrawers();
                         break;
                     case 9:
