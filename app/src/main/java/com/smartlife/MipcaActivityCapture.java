@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.google.zxing.Result;
+import com.smartlife.http.OkRequestEvents;
 import com.smartlife.huanxin.gui.BaseActivity;
 import com.smartlife.utils.ToastUtil;
 import com.smartlife.zxing.decode.DecodeThread;
@@ -22,9 +23,12 @@ import com.smartlife.zxing.utils.CaptureActivityHandler;
 import com.smartlife.zxing.utils.InactivityTimer;
 import com.smartlife.zxing.utils.camera.CameraManager;
 import com.umeng.analytics.MobclickAgent;
+import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+
+import okhttp3.Call;
 
 /**
  * 描述：二维码扫描界面
@@ -143,6 +147,17 @@ public class MipcaActivityCapture extends BaseActivity implements Callback {
      */
     private void runBindDevice(String resultString) {
         ToastUtil.showShort("success:" + resultString);
+        OkRequestEvents.insertRobotInfo("dd","dd","dd","dd","dd","dd", new StringCallback() {
+            @Override
+            public void onError(Call call, Exception e, int id, String jsonString) {
+                ToastUtil.showShort("onError:" + e);
+            }
+
+            @Override
+            public void onResponse(String response, int id) {
+                ToastUtil.showShort("onResponse:" + response);
+            }
+        });
     }
 
     @Override

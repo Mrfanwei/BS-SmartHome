@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import com.smartlife.R;
 import com.smartlife.qrcode.utils.ZXingUtils;
 
-public class QRScanFragment extends DialogFragment implements ViewTreeObserver.OnGlobalLayoutListener {
+    public class QRScanFragment extends DialogFragment implements ViewTreeObserver.OnGlobalLayoutListener {
 
     private String TAG = "SmartLife/QrcodeFrag";
     private ImageView iv_qrcode;

@@ -301,7 +301,7 @@ public class OkRequestEvents {
         params.put("phoneid", phoneid);
         params.put("address", address);
         params.put("robotname", robotname);
-        params.put("robotSerial", robotSerial);
+        params.put("robot_serial", robotSerial);
         params.put("robotid", robotid);
         params.put("online", online);
 

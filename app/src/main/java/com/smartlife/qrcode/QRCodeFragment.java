@@ -15,14 +15,12 @@ import com.smartlife.qrcode.utils.ZXingUtils;
 
 public class QRCodeFragment extends DialogFragment implements ViewTreeObserver.OnGlobalLayoutListener {
 
-    private String TAG = "SmartLife/QrcodeFrag";
     private ImageView iv_qrcode;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_qrcode, container, false);
-        //设置无标题
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         iv_qrcode = (ImageView) view.findViewById(R.id.iv_qrcode);
         iv_qrcode.getViewTreeObserver().addOnGlobalLayoutListener(this);
